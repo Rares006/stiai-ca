@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3A2D22">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Știai că?">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}</style>
+<title>Știai că? Citirea de azi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@700;800;900&display=swap">
+<style>
+/* Layout: the „Știai că?” slides turned into a phone app. Pământ ground with grain, Unbounded caps
+   for titles, Lumină cards for the facts, Fraunces italic for Scripture words, Albastru for the thread
+   that ties the day's passages, the jar „?” in the corner where a logo would sit (no series branding),
+   and a thumb dock at the bottom: previous day, read in the Bible app, next day. One column, max 720px.
+   Deliberately single-look (dark warm), like the section's slides. */
+:root {
+  --cafea: #2A2118;
+  --pamant: #5B4A3A;
+  --nisip: #A39583;
+  --piatra: #D5CCBD;
+  --lumina: #F7F2EA;
+  --lut-text: #9E5228;
+  --jar: #FF5A1F;
+  --albastru: #2F4BFF;
+  --ground: #3A2D22;
+  --line: rgba(247, 242, 234, .16);
+  --line-dark: rgba(42, 33, 24, .14);
+  --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --text: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --scripture: "Fraunces", Georgia, "Times New Roman", serif;
+  --radius: 22px;
+  --dock-h: 78px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--ground); -webkit-text-size-adjust: 100%; }
+body {
+  min-height: 100%;
+  background:
+    radial-gradient(120% 50% at 30% 0%, rgba(128, 106, 82, .55), transparent 70%),
+    linear-gradient(180deg, #55432F 0%, #45372A 35%, #33281E 100%);
+  background-color: var(--ground);
+  color: var(--lumina);
+  font: 400 1rem/1.6 var(--text);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+.grain {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .22; mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55  0 0 0 0 .5  0 0 0 0 .45  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.wrap {
+  position: relative; z-index: 1;
+  max-width: 720px; margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px));
+}
+:focus-visible { outline: 3px solid var(--jar); outline-offset: 3px; border-radius: 8px; }
+p { margin: 0; }
+a { color: inherit; }
+button { font-family: inherit; }
+[hidden] { display: none !important; }
+
+.tag {
+  display: inline-block;
+  font: 800 .72rem/1.2 var(--text); letter-spacing: .14em; text-transform: uppercase;
+}
+.tag.jar { color: var(--jar); }
+.tag.nisip { color: var(--nisip); }
+.tag.lut { color: var(--lut-text); }
+.q { color: var(--jar); }
+
+/* ---------- hero */
+.hero { display: grid; gap: 18px; padding-block: 26px 6px; }
+.mark {
+  margin: 0;
+  font: 900 clamp(3rem, 15vw, 6.2rem)/1.04 var(--display);
+  letter-spacing: -.035em; text-transform: uppercase;
+}
+.mark .q { display: inline-block; transform-origin: 50% 85%; transform: rotate(8deg); animation: tilt 1.1s cubic-bezier(.3, 1.6, .5, 1) .15s both; }
+@keyframes tilt { from { transform: rotate(-16deg); } to { transform: rotate(8deg); } }
+.lead { color: var(--piatra); font-size: 1.05rem; max-width: 36ch; }
+
+/* ---------- ask card: the plan day first, any other reading below */
+.ask {
+  color-scheme: light;
+  background: var(--lumina); color: var(--cafea);
+  border-radius: var(--radius); padding: 18px;
+  display: grid; gap: 14px;
+}
+.ask :focus-visible { outline-color: var(--albastru); }
+.plan { display: grid; gap: 10px; }
+.plan-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.day { display: grid; gap: 6px; min-width: 0; }
+.day-num { font: 900 clamp(1.7rem, 8vw, 2.3rem)/1 var(--display); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.day-of { font: 700 .88rem/1.2 var(--text); color: var(--pamant); }
+.day-nav { display: flex; gap: 8px; flex: none; }
+.day-btn {
+  width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center;
+  border: 1.5px solid rgba(42, 33, 24, .22); background: transparent; color: var(--cafea);
+}
+.day-btn:hover { background: rgba(42, 33, 24, .06); }
+.day-btn:disabled { opacity: .35; cursor: default; }
+.day-btn svg { width: 18px; height: 18px; }
+.plan-refs { font: 700 1rem/1.45 var(--text); color: var(--cafea); }
+.plan-note, .plan-missing { font-size: .88rem; color: var(--pamant); }
+.plan-off { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill {
+  cursor: pointer; border-radius: 999px; padding: 8px 13px;
+  font: 700 .8rem/1.2 var(--text);
+  border: 1.5px solid rgba(42, 33, 24, .22); background: transparent; color: var(--cafea);
+}
+.pill.solid { background: var(--cafea); color: var(--lumina); border-color: var(--cafea); }
+.divider { height: 1px; background: var(--line-dark); }
+.other { display: grid; gap: 12px; }
+.ask .row { display: flex; flex-wrap: wrap; gap: 8px; }
+#ref {
+  flex: 1 1 230px; min-width: 0;
+  font: 600 1rem/1.3 var(--text); color: var(--cafea);
+  padding: 12px 15px; border-radius: 14px;
+  border: 2px solid rgba(42, 33, 24, .18); background: #FFFDF9;
+}
+#ref::placeholder { color: #8C7B67; font-weight: 500; }
+#ref:focus { border-color: var(--albastru); outline: none; }
+.btn-jar, .btn-dark {
+  flex: 0 0 auto; border: 0; cursor: pointer;
+  font: 800 .82rem/1 var(--display); letter-spacing: .02em; text-transform: uppercase;
+  padding: 15px 20px; border-radius: 999px;
+  transition: transform .15s ease, opacity .15s ease;
+}
+.btn-jar { background: var(--jar); color: var(--cafea); }
+.btn-jar.wide { width: 100%; padding-block: 17px; font-size: .86rem; }
+.btn-dark { background: var(--cafea); color: var(--lumina); padding: 13px 18px; }
+.btn-jar:hover, .btn-dark:hover { transform: translateY(-1px); }
+.btn-jar:disabled, .btn-dark:disabled { opacity: .55; cursor: progress; transform: none; }
+.opts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .85rem; color: var(--pamant); }
+#ver {
+  font: 600 .85rem/1.2 var(--text); color: var(--cafea);
+  padding: 6px 8px; border-radius: 10px; max-width: 100%;
+  border: 1.5px solid rgba(42, 33, 24, .2); background: #FFFDF9;
+}
+.recent { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.chip {
+  border: 0; cursor: pointer; max-width: 100%;
+  background: rgba(42, 33, 24, .07); color: var(--cafea);
+  font: 700 .8rem/1.2 var(--text); padding: 7px 12px; border-radius: 999px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chip:hover { background: rgba(42, 33, 24, .13); }
+
+/* ---------- status */
+.status {
+  display: flex; align-items: center; gap: 14px;
+  border: 1.5px solid var(--line); border-radius: 18px;
+  background: rgba(42, 33, 24, .38);
+  padding: 14px 16px;
+}
+.status[data-kind="error"] { border-color: var(--jar); }
+.status-q { flex: none; font: 900 1.7rem/1 var(--display); color: var(--jar); }
+.status[data-kind="loading"] .status-q { animation: bob 1.4s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(14deg) translateY(-2px); } }
+.status p { flex: 1; min-width: 0; color: var(--piatra); font-size: .95rem; }
+.btn-ghost {
+  flex: none; cursor: pointer;
+  background: transparent; color: var(--lumina);
+  border: 1.5px solid var(--line); border-radius: 999px;
+  font: 700 .85rem/1 var(--text); padding: 10px 16px;
+}
+.btn-ghost:hover { border-color: var(--piatra); }
+
+/* ---------- result */
+#result { display: grid; gap: 40px; padding-block: 34px 8px; scroll-margin-top: 12px; touch-action: pan-y; }
+.passage { display: grid; gap: 14px; }
+.sticker {
+  justify-self: start;
+  display: inline-flex; align-items: center;
+  padding: .62em 1.15em; border-radius: 999px;
+  font: 800 .7rem/1 var(--text); letter-spacing: .12em; text-transform: uppercase;
+  background: var(--lumina); color: var(--cafea);
+  transform: rotate(-3deg);
+}
+#ptitle {
+  margin: 0;
+  font: 900 clamp(1.45rem, 6.2vw, 2.4rem)/1.1 var(--display);
+  letter-spacing: -.02em; text-transform: uppercase; text-wrap: balance;
+  overflow-wrap: break-word;
+}
+.refs { display: flex; flex-wrap: wrap; gap: 8px; }
+.ref-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1.5px solid var(--line); border-radius: 999px;
+  padding: 7px 13px; text-decoration: none;
+  font: 700 .85rem/1.2 var(--text); color: var(--lumina);
+}
+a.ref-chip:hover { border-color: var(--jar); }
+.ref-chip svg { width: 14px; height: 14px; }
+.missing {
+  border: 1.5px dashed var(--line); border-radius: var(--radius);
+  padding: 20px; display: grid; gap: 6px; color: var(--piatra);
+}
+
+.sec { display: grid; gap: 16px; }
+.sec-title {
+  margin: 0; display: flex; align-items: center; gap: 12px;
+  font: 800 .78rem/1 var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--jar);
+}
+.sec-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.big-title {
+  margin: 0;
+  font: 900 clamp(2rem, 10vw, 3.3rem)/1.04 var(--display);
+  letter-spacing: -.03em; text-transform: uppercase;
+}
+
+/* thread: why the day's passages sit together */
+.thread {
+  background: var(--albastru); color: var(--lumina);
+  border-radius: var(--radius); padding: 20px 20px 22px;
+  display: grid; gap: 8px;
+}
+.thread .tag { color: rgba(247, 242, 234, .82); }
+.thread p { font: 600 1.05rem/1.5 var(--text); }
+
+/* context: label column + text, one row per item */
+.ctx { display: grid; }
+.ctx-item {
+  display: grid; grid-template-columns: 6.2rem minmax(0, 1fr); gap: 14px;
+  padding-block: 13px; border-top: 1px solid var(--line);
+}
+.ctx-item:last-child { border-bottom: 1px solid var(--line); }
+.ctx-label { display: grid; gap: 4px; align-content: start; padding-top: .2em; }
+.ctx-ref { font: 600 .74rem/1.3 var(--text); color: var(--nisip); }
+.ctx-item p { color: var(--piatra); }
+
+/* facts: Lumină cards, like the slide cards */
+.facts { display: grid; gap: 14px; }
+.fact {
+  position: relative; overflow: hidden;
+  background: var(--lumina); color: var(--cafea);
+  border-radius: var(--radius); padding: 20px 20px 22px;
+  display: grid; gap: 8px; align-content: start;
+}
+.fact::after {
+  content: "?"; position: absolute; right: 10px; bottom: -22px;
+  font: 900 7rem/1 var(--display); color: rgba(255, 90, 31, .1);
+  pointer-events: none;
+}
+.fact > * { position: relative; z-index: 1; }
+.fact-num { font: 900 clamp(1.8rem, 8.5vw, 2.6rem)/1.05 var(--display); color: var(--jar); letter-spacing: -.03em; overflow-wrap: break-word; }
+.fact h4 { margin: 0; font: 800 1.08rem/1.3 var(--display); letter-spacing: -.01em; text-wrap: balance; }
+.fact p { color: var(--pamant); font-size: .98rem; }
+
+/* terms */
+.terms { margin: 0; display: grid; }
+.term { display: grid; gap: 4px; padding-block: 14px; border-top: 1px solid var(--line); }
+.term:last-child { border-bottom: 1px solid var(--line); }
+.term dt { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.term-word { font: italic 600 1.4rem/1.2 var(--scripture); color: var(--lumina); }
+.term-orig { font: 600 .8rem/1.2 var(--text); color: var(--nisip); letter-spacing: .03em; }
+.term dd { margin: 0; color: var(--piatra); }
+
+/* then and now: split cards */
+.today { display: grid; gap: 12px; }
+.today-row { display: grid; grid-template-columns: 1fr 1fr; border-radius: 20px; overflow: hidden; }
+.today-row > div { padding: 16px 18px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.then { background: var(--cafea); color: var(--piatra); }
+.now { background: var(--lumina); color: var(--cafea); }
+@media (max-width: 560px) { .today-row { grid-template-columns: 1fr; } }
+
+/* watch list */
+.watch { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.watch li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; align-items: start; }
+.watch svg { width: 26px; height: 20px; margin-top: .2em; color: var(--jar); }
+
+/* question: the verse slide */
+.verse {
+  background: var(--cafea); border-radius: var(--radius);
+  padding: 24px 22px 22px; display: grid; gap: 14px;
+}
+.verse img { width: 38px; height: auto; }
+.verse p { font: italic 400 clamp(1.25rem, 5vw, 1.6rem)/1.38 var(--scripture); color: var(--lumina); text-wrap: pretty; }
+
+/* go read: one jar card, the plan day first */
+.go { display: grid; gap: 10px; }
+.read-card {
+  background: var(--jar); color: var(--cafea);
+  border-radius: var(--radius); padding: 18px 20px 8px;
+  display: grid;
+}
+.read-card > .tag { padding-bottom: 10px; }
+.read-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding-block: 13px; border-top: 1.5px solid rgba(42, 33, 24, .2);
+  color: var(--cafea); text-decoration: none;
+  font: 800 1rem/1.25 var(--display); letter-spacing: -.01em;
+}
+.read-row.main { font-size: 1.12rem; font-weight: 900; }
+.read-row span { min-width: 0; overflow-wrap: break-word; }
+.read-row svg { flex: none; width: 28px; height: 22px; transition: transform .15s ease; }
+.read-row:hover svg { transform: translateX(3px); }
+.go-note { color: var(--nisip); font-size: .85rem; }
+.go .btn-ghost { justify-self: start; margin-top: 6px; }
+
+/* footer */
+.foot {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 20px;
+  margin-top: 36px; padding-block: 22px 26px; border-top: 1px solid var(--line);
+}
+.foot p { color: var(--nisip); font-size: .82rem; max-width: 44ch; }
+.corner { flex: none; font: 900 2.6rem/.8 var(--display); color: var(--jar); }
+
+/* ---------- dock: thumb bar at the bottom */
+.dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  padding-top: 14px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(180deg, rgba(51, 40, 30, 0) 0%, rgba(51, 40, 30, .94) 38%);
+}
+.dock-in { max-width: 720px; margin-inline: auto; display: flex; align-items: center; gap: 8px; }
+.dock-arrow {
+  flex: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center;
+  background: rgba(42, 33, 24, .85); color: var(--lumina);
+  border: 1.5px solid var(--line);
+}
+.dock-arrow:disabled { opacity: .35; cursor: default; }
+.dock-arrow svg { width: 18px; height: 18px; }
+.dock-btn {
+  flex: 1; min-width: 0; height: 52px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--jar); color: var(--cafea); text-decoration: none;
+  font: 800 .84rem/1 var(--display); text-transform: uppercase; letter-spacing: .01em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+}
+.dock-btn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dock-btn svg { flex: none; width: 22px; height: 18px; }
+
+.in { animation: rise .45s ease both; }
+@keyframes rise { from { opacity: .001; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) {
+  .mark .q, .status-q, .in { animation: none !important; }
+  .btn-jar, .btn-dark, .read-row svg { transition: none; }
+}
+</style>
+
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<main class="wrap" lang="ro">
+  <section class="hero">
+    <span class="tag jar" id="today-date">Citirea de azi</span>
+    <h1 class="mark">Știai<br>că<span class="q">?</span></h1>
+    <p class="lead">Câteva lucruri de știut înainte să deschizi Biblia: contextul, detalii surprinzătoare și obiectele sau cuvintele din pasaj.</p>
+
+    <form class="ask" id="ask" autocomplete="off">
+      <div class="plan">
+        <span class="tag lut">Provocarea celor 49 de săptămâni</span>
+        <div class="plan-row">
+          <div class="day"><span class="day-num" id="day-num">Ziua 284</span><span class="day-of" id="day-of">din 341</span></div>
+          <div class="day-nav">
+            <button class="day-btn" id="day-prev" type="button" aria-label="Ziua anterioară"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="day-btn" id="day-next" type="button" aria-label="Ziua următoare"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+        <p class="plan-refs" id="plan-refs"></p>
+        <p class="plan-note" id="plan-note" hidden>Zi de pauză și reflecție: un singur verset, de citit încet.</p>
+        <div class="plan-off" id="plan-off" hidden>
+          <button class="pill" id="back-today" type="button">Înapoi la ziua de azi</button>
+          <button class="pill solid" id="set-day" type="button">Sunt la ziua asta</button>
+        </div>
+        <button class="btn-jar wide" id="plan-btn" type="button" hidden>Pregătește ziua cu Claude</button>
+      </div>
+
+      <div class="other" id="other">
+        <div class="divider"></div>
+        <label class="tag lut" for="ref">Sau altă citire</label>
+        <div class="row">
+          <input id="ref" name="ref" type="text" enterkeyhint="go" placeholder="ex: Ioan 4:1-42">
+          <button class="btn-dark" id="go-btn" type="submit">Pregătește</button>
+        </div>
+        <div class="recent" id="recent" hidden></div>
+      </div>
+
+      <div class="opts">
+        <label for="ver">Traducerea pentru linkuri</label>
+        <select id="ver"></select>
+      </div>
+    </form>
+
+    <div class="status" id="status" role="status" aria-live="polite" hidden>
+      <span class="status-q" aria-hidden="true">?</span>
+      <p id="status-text"></p>
+      <button class="btn-ghost" id="stop" type="button" hidden>Oprește</button>
+    </div>
+  </section>
+
+  <article id="result" hidden>
+    <header class="passage">
+      <span class="sticker" id="badge">Azi</span>
+      <h2 id="ptitle"></h2>
+      <div class="refs" id="prefs"></div>
+    </header>
+
+    <div class="missing" id="missing" hidden>
+      <span class="tag jar">Încă nu e gata</span>
+      <p id="missing-text">Notele „Știai că?” pentru ziua asta nu sunt scrise încă. Poți citi pasajele din linkurile de mai jos.</p>
+    </div>
+
+    <section class="sec" id="s-thread" hidden>
+      <div class="thread">
+        <span class="tag">Firul zilei</span>
+        <p id="thread"></p>
+      </div>
+    </section>
+
+    <section class="sec" id="s-context" hidden>
+      <h3 class="sec-title">Contextul</h3>
+      <div class="ctx" id="ctx"></div>
+    </section>
+
+    <section class="sec" id="s-facts" hidden>
+      <h3 class="big-title">Știai că<span class="q">?</span></h3>
+      <div class="facts" id="facts"></div>
+    </section>
+
+    <section class="sec" id="s-terms" hidden>
+      <h3 class="sec-title">Obiecte și cuvinte</h3>
+      <dl class="terms" id="terms"></dl>
+    </section>
+
+    <section class="sec" id="s-today" hidden>
+      <h3 class="sec-title">Atunci și acum</h3>
+      <div class="today" id="today"></div>
+    </section>
+
+    <section class="sec" id="s-watch" hidden>
+      <h3 class="sec-title">Când citești, fii atent la</h3>
+      <ul class="watch" id="watch"></ul>
+    </section>
+
+    <section class="sec" id="s-q" hidden>
+      <div class="verse">
+        <img src="ghilimele.svg" alt="" width="77" height="60">
+        <p id="question"></p>
+        <span class="tag nisip">De luat cu tine în citire</span>
+      </div>
+    </section>
+
+    <section class="go" id="go" hidden>
+      <div class="read-card">
+        <span class="tag">Acum citește</span>
+        <div id="links"></div>
+      </div>
+      <p class="go-note" id="go-note">Se deschide în aplicația Biblia, dacă o ai pe telefon, sau pe bible.com.</p>
+      <button class="btn-ghost" id="again" type="button" hidden>Altă variantă</button>
+    </section>
+  </article>
+
+  <footer class="foot">
+    <p>Detaliile sunt scrise de Claude și pot avea greșeli. Ce ți se pare surprinzător, verifică înainte să-l spui mai departe.</p>
+    <span class="corner" aria-hidden="true">?</span>
+  </footer>
+</main>
+
+<nav class="dock" id="dock" aria-label="Navigare pe zile" hidden>
+  <div class="dock-in">
+    <button class="dock-arrow" id="dock-prev" type="button" aria-label="Ziua anterioară"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <a class="dock-btn" id="dock-btn" href="#" target="_blank" rel="noopener"><span id="dock-label">Citește ziua</span><svg viewBox="4 14 92 72" aria-hidden="true"><path d="M12,50 H84 M60,24 L86,50 L60,76" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <button class="dock-arrow" id="dock-next" type="button" aria-label="Ziua următoare"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+</nav>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const DAY = 24 * 60 * 60 * 1000;
+  const STORE_KEY = "stiai-ca.v1";
+
+  // „Provocarea celor 49 de săptămâni” (Life.Church, plan 17106 pe bible.com): pasajele fiecărei zile.
+  const PLAN = {
+    id: 17106,
+    name: "Provocarea celor 49 de săptămâni",
+    anchorDay: 284,
+    anchorDate: "2026-11-17",
+    days: "LUK.1.1-13,1CH.24,2CH.8,2CH.29|LUK.1.14-38,MAL.4,LEV.10,JER.33|LUK.1.39-80,1SA.2,EZK.24,EZK.29|JHN.1.1-14,PSA.36,JOB.29,EXO.40|MAT.1.1-4,GEN.38,GEN.46,NUM.7|MAT.1.5-6,RUT.1,RUT.2,RUT.3,RUT.4|JHN.1.14|MAT.1.6-17,2KI.3,2KI.18,2KI.19,1CH.3|MAT.1.18-25,ISA.7,PSA.130,DEU.22|LUK.2.1-38,EXO.13,LEV.12,2CH.7|MAT.2,MIC.5,HOS.11,NUM.24,JOS.20|LUK.2.39-52,DEU.16,PSA.48,PSA.84|MAT.3,ISA.4,ISA.40,PSA.92|LUK.2.30-32|MRK.1,LEV.13,ISA.44,ISA.61|LUK.3,GEN.10,GEN.11,1CH.1,1CH.2|MAT.4,PSA.91,ISA.9,1CH.21|LUK.4,DEU.8,NUM.15,2KI.5|LUK.5,LEV.14,PSA.150,ISA.43|JHN.1.15-51,GEN.28,GEN.31,GEN.32,GEN.35|PSA.91.2|JHN.2,GEN.41,LEV.1,DEU.14|JHN.3,NUM.21,PRO.30|JHN.4,GEN.33,JOS.8,JOS.24,ISA.12|MRK.2,DEU.23,1SA.21,1SA.22|JHN.5,JER.17,NEH.3,NEH.12,JOB.10|MAT.12.1-21,MIC.6,PSA.71,2CH.3,2CH.4|MRK.2.17|MRK.3,EXO.35,JER.52,JOB.33|LUK.6,PRO.21,PSA.79,ISA.15,ISA.16|MAT.5,NUM.30,2SA.4,2CH.36,JOB.25|MAT.6,2KI.20,JOB.38,PRO.23,ZEC.7|MAT.7,1CH.28,EZK.22,EZK.35|MAT.8.1-13,PSA.107,JER.30,MAL.1|MAT.5.44|LUK.7,PSA.113,ECC.9,MAL.3|MAT.11,1CH.22,ISA.35,JER.6,AMO.1|MAT.12.22-50,2CH.9,1KI.10,JON.1,JON.2|LUK.11,DEU.26,2CH.24,PRO.8,JON.3|MAT.13,PSA.78,ISA.37,JER.5|LUK.8,ISA.6,MAT.8.14-34,ISA.53,PSA.75|ISA.35.3-4|MRK.4,JER.16,PSA.147,EZK.31|MRK.5,LEV.15,PSA.142|MAT.9,HOS.6,NUM.27,2CH.35|MAT.10,MIC.7,JER.50,1SA.14|MAT.14,LEV.18,GEN.40,1CH.10|MRK.6.1-21,EST.1,EST.2,EST.3|HOS.6.3|MRK.6.22-23,EST.4,EST.5,EST.6|MRK.6.24-56,EST.7,EST.8,EST.9,EST.10|LUK.9.1-27,2KI.4,EZK.10|JHN.6,NEH.9,NEH.10,JOB.9|MAT.15,EXO.21,LAM.2,LAM.4|MRK.7,LEV.20,2CH.21,EZK.25|JHN.6.37|MAT.16,2CH.6,PSA.42|MRK.8,LEV.8,1CH.23,PSA.105|MAT.17,EXO.14,EXO.30,EZR.1|MRK.9,ISA.66,LEV.2,NUM.11|LUK.9.28-62,2KI.1,JOB.37,PSA.29|MAT.18,NUM.35,JER.45|MAT.16.15-16|JHN.7,1SA.16,PSA.114,PSA.129|JHN.8,EXO.5,EXO.6,DEU.17,2CH.18|JHN.9,2KI.14,JOB.21,PSA.66,PRO.15|JHN.10.1-21,EXO.4,1CH.11,PSA.23,PSA.65|LUK.10,DEU.6,LEV.21,JOB.40|JHN.10.22-42,PSA.82,LEV.24,1KI.7|DEU.6.5|LUK.12,PSA.49,JOB.20,JOB.27|LUK.13,PSA.118,PSA.122,JER.22|LUK.14,2CH.12,ISA.25,EZK.17|LUK.15,GEN.45,PRO.29,JON.4|LUK.16,LUK.17.1-10,EZR.10,ECC.6,EZK.16|JHN.11,2CH.30,JOB.2|LUK.15.7|LUK.17.11-37,GEN.6,GEN.7,GEN.19|LUK.18.1-14,PSA.58,PSA.88,ISA.58|MAT.19,GEN.1,PSA.127,SNG.1,SNG.2|MRK.10,DEU.24,2SA.11,SNG.3,SNG.4|MAT.20,1KI.12,ISA.51,JER.49|MAT.21,ZEC.9,PSA.80,ISA.62|MRK.10.26-27|LUK.18.15-43,EXO.20,PSA.123,ZEC.5|LUK.19,NUM.5,2SA.12,1CH.27,PSA.137|MRK.11,ISA.56,JER.7,2CH.23,EZR.3|JHN.12,DEU.15,1KI.1,ISA.39|MAT.22,EXO.3,PSA.64,1KI.5|MRK.12,1SA.15,2KI.12,NEH.7|LUK.19.10|MAT.23.1-36,EZK.21,EZR.7,PSA.26|MAT.23.37-39,1KI.9,PSA.57,PSA.61,ISA.31|LUK.20,ISA.5,JER.21,EZK.19|LUK.21,2CH.15,ISA.19,HOS.9|MRK.13,ISA.13,DAN.9,DAN.11|MAT.24,ISA.34,DAN.12,EZK.5,JOS.9|PSA.57.1|MAT.25,JOB.31,PRO.14,JER.46|MAT.26,LEV.5,JOB.17,PSA.27|MRK.14,ZEC.13,EZK.41,EZK.42|LUK.22,LEV.23,2KI.23,JOB.1|JHN.13,PSA.41,PSA.119.1-40|JHN.14,1KI.6,PSA.77,PSA.85|JHN.14.27|JHN.15.1-12,1SA.18,1SA.19,1SA.20,EZK.15|JHN.15.13-27,GEN.44,PSA.35,PRO.18|JHN.16,NEH.8,PSA.25,LAM.5|JHN.17,EZR.8,PSA.133,ECC.3|LUK.23,PSA.31,HOS.10,EXO.26|MRK.15,PSA.22,PSA.38,AMO.8|JHN.15.5|MAT.27.1-10,1SA.31,JER.19,JER.32,ZEC.11|MAT.27.11-66,GEN.20,ZEC.6|JHN.18,2SA.15,2SA.19,2CH.11|JHN.19,EXO.12,NUM.9,ZEC.12|MAT.28,DAN.10,MIC.2,HAG.1|MRK.16,PSA.108,LUK.24,PSA.39,PSA.72|PSA.108.3|JHN.20,PSA.124,JHN.21,2SA.5,EZK.34|ACT.1,PSA.69,PSA.109,MIC.1|ACT.2,JOL.2,PSA.16,1KI.2|ACT.3,GEN.26,DEU.18,2KI.13|ACT.4,PSA.2,2SA.2,JOB.32,ZEC.10|ACT.5,LEV.6,2CH.13,ISA.46|JHN.20.31|ACT.6,EXO.18,NUM.8,NEH.13|ACT.7.1-8,GEN.12,GEN.29,GEN.30|ACT.7.9-16,GEN.39,GEN.42,GEN.47|ACT.7.17-29,EXO.1,EXO.2,1KI.4|ACT.7.30-43,AMO.5,EXO.11,LEV.27|ACT.7.44-45,JOS.3,JOS.12,JOS.13|ACT.7.33|ACT.7.46-60,JOS.14,JOS.15,JOS.23,2CH.2|ACT.8,1KI.8,1KI.13,1KI.18|ACT.9,2KI.8,ISA.17,JER.40,JER.41|ACT.10,2CH.19,JOB.34,PSA.20,EZK.4|ACT.11,PSA.51,ISA.18|ACT.12,1SA.25,DAN.3,DAN.6|PSA.20.7-8|ACT.13.1-19,NUM.32,NUM.33,NUM.34|ACT.13.19,JOS.16,JOS.17,JOS.18,JOS.19|ACT.13.19-20,JDG.1,JDG.2,JDG.3,JDG.10|ACT.13.20-21,1SA.3,1SA.7,1SA.8,1CH.8|ACT.13.21-22,1SA.9,1SA.10,1SA.11,1SA.13|ACT.13.22-52,1SA.23,1SA.24,ISA.55,HAB.1|ISA.65.6-9|ACT.14,DEU.11,PSA.81,MIC.4|JAS.1,PRO.2,DAN.1,JOB.15,PSA.7|JAS.2,GEN.15,2CH.20,ISA.41|JAS.3,PSA.140,PRO.16,ISA.32|JAS.4.1-8,JER.3,HOS.3,ZEC.1|JAS.4.9-17,2KI.22,ISA.33|JAS.3.17|JAS.5,JOB.13,JOB.42,ISA.50|ACT.15,AMO.9,LEV.3,LEV.7|ACT.16,1SA.28,PSA.119.49-64,JER.20|GAL.1,2CH.22,JOB.18,JOB.22|GAL.2,PSA.67,ISA.42|GAL.3,GEN.13,GEN.24,DEU.21,DEU.27|GAL.3.26-27|GAL.4,GEN.16,GEN.21,ISA.54|GAL.5,LEV.19,2SA.9,2CH.10|GAL.6,PSA.126,JOB.4,JER.34|ACT.17,2KI.16,PSA.50,PSA.96,DAN.5|ACT.18.1-18,2SA.1,1TH.1,2KI.11,EZK.8|1TH.2,NEH.4,NEH.6,PSA.60|1TH.1.3|1TH.3,2CH.31,EZR.4|1TH.4,EZK.36,HOS.4,HOS.5|1TH.5,NUM.23,2CH.14,PSA.97,EZK.13|2TH.1,PSA.143,2KI.17,ISA.24|2TH.2,ISA.14,EZK.28,DAN.8|2TH.3,PSA.59,ECC.2,ISA.36|2TH.1.11-12|ACT.18.19-28,ACT.19,JER.10,2KI.21|1CO.1,ISA.29,DEU.7,JER.8|1CO.2,ISA.64,2CH.27,PSA.146|1CO.3,JOB.5,PSA.94,NUM.31|1CO.4,PSA.90,JOB.12,JOB.24|1CO.5,GEN.34,2SA.13,2SA.16|PSA.90.1-2|1CO.6,GEN.2,EZK.23,PSA.74|1CO.7,SNG.5,SNG.6,NUM.36,MAL.2|1CO.8,2CH.28,JER.44,EZK.30|1CO.9,DEU.20,DEU.25,1SA.27,PRO.12|1CO.10.1-13,EXO.17,EXO.32,NUM.20,NUM.25|1CO.10.14-33,1KI.14,PSA.24,1CO.11,GEN.9|1CO.6.19-20|1CO.12,PSA.115,JDG.17,JDG.18|1CO.13,JOB.14,JOB.19,JOB.26,JOB.36|1CO.14,ISA.28,AMO.7,NUM.10|1CO.15.1-55,ISA.22,HOS.13,EZK.45,EZK.46|1CO.15.54-58,1CH.18,1CH.19,1CH.20|1CO.16,JOS.1,NEH.2|1CO.15.58|2CO.1,JDG.4,2CH.16,2CH.17,EZK.9|2CO.2,EXO.29,JOB.6,LAM.1|2CO.3,EXO.31,EXO.34,PRO.7|2CO.4,PSA.30,PSA.37,PSA.116|2CO.5,2CH.32,ECC.1,ISA.27|2CO.6,LEV.26,2SA.7,EZK.37,1KI.11|2CO.5.7|2CO.7,2CH.33,ECC.4|2CO.8,EXO.16,EZR.2|2CO.9,PSA.112,NEH.5|2CO.10,JER.9,1CH.12,1CH.14|2CO.11,GEN.3,ECC.10|2CO.12,PRO.19|2CO.12.9-10|2CO.13,DEU.19,LAM.3|ROM.1.1-25,HAB.2,PSA.106,JER.13|ROM.1.26-32,JDG.19,JDG.20,JDG.21|ROM.2,PSA.62,ISA.52,JER.4,JOS.5|ROM.3,PSA.5,PSA.10,PSA.14,PSA.53|ROM.4,GEN.17,GEN.18,PSA.32,1SA.30|ROM.3.21-24|ROM.5,NAM.2,2SA.14,2SA.18|ROM.6,PSA.119.129-136,PRO.10,EZK.18|ROM.7,DEU.5,PSA.1,1KI.21,2KI.10|ROM.8,PSA.44,GEN.50,JOB.16,ISA.38|ROM.9.1-21,GEN.25,EXO.9,EXO.33,JOS.11|ROM.9.22-33,ISA.1,ISA.10,HOS.1,HOS.2|ROM.8.31|ROM.10,DEU.30,PSA.19,EZK.20|ROM.11.1-27,DEU.29,1KI.19,JOB.11,JER.11|ROM.11.26-36,ISA.59,JOB.35,JOB.41,ECC.8|ROM.12.1-16,2SA.17,JOB.30,PSA.131|ROM.12.17-21,DEU.32,PRO.25,1SA.26|ROM.13,2SA.21,DAN.2,DAN.4,PRO.24|PRO.24.14|ROM.14,ISA.45,OBA.1|ROM.15,2SA.22,PSA.18,PSA.117,ISA.11|ROM.16,PSA.12,ISA.48|ACT.20,1KI.17,PSA.6,JER.42|ACT.21,ACT.22,NUM.6,JER.26|ACT.23,EXO.22,PSA.54,PSA.70|ACT.20.24|ACT.24,2SA.20,MIC.3,ACT.25,JER.38|ACT.26,PSA.119.41-48,JER.1,JER.18,JER.35|ACT.27,NUM.29,ACT.28,PSA.15,PSA.119.65-96|COL.1,PSA.43,PSA.89,2CH.1,JOB.39|COL.2,LEV.22,PSA.100,PRO.1|COL.3,PSA.47,1CH.15,1CH.16,1CH.26|COL.1.13-14|COL.4,LEV.25,NEH.1,PHM.1,GEN.43|EPH.1,1KI.20,2CH.25,PSA.99|EPH.2,DEU.9,2SA.24,PSA.148,ISA.57|EPH.3,1KI.3,PSA.103,EZK.47|EPH.4,PSA.4,PSA.68,ZEC.8|EPH.5,2SA.6,1CH.13,PRO.20,ISA.60|EPH.1.3|EPH.6,PRO.6,2SA.10,PSA.132|PHP.1,PHP.2,PSA.138,1SA.29|PHP.3,PHP.4,PSA.21,PSA.73,HAB.3|1TI.1,2KI.15,PSA.83,ECC.11|1TI.2,PSA.63,PRO.31,EZR.5,EZR.6|1TI.3,PSA.9,1TI.4,PRO.22,2CH.26|PHP.4.6-7|1TI.5,DEU.13,SNG.7,SNG.8|1TI.6,JOS.7,PSA.136,ECC.5|TIT.1,JER.12,HOS.8,AMO.6|TIT.2,PSA.135,ECC.7,HOS.7|TIT.3,PSA.101,PSA.120,PSA.125|1PE.1,LEV.11,JOB.23,PRO.17|1TI.6.6-7|1PE.2,ISA.8,JOS.4,1SA.12,PRO.9|1PE.3,PSA.34,GEN.8,1KI.15,ISA.3|1PE.4,PRO.11,JER.25,AMO.3|1PE.5,PRO.3,PSA.13,PSA.55|HEB.1,1CH.17,PSA.45,PSA.102,PSA.104|HEB.2,PSA.8,PSA.144,JOB.7,1CH.25|1PE.5.7|HEB.3,NUM.12,NUM.13,NUM.14,DEU.1|HEB.4.1-11,PSA.95,DEU.3,JOS.21,JOS.22|HEB.4.12-16,PSA.33,PRO.5,ECC.12|HEB.5,PSA.110,EXO.27,EXO.28,LEV.9|HEB.6,GEN.22,LEV.16,JER.48|HEB.7,GEN.14,EXO.39,NUM.18|HEB.6.19-20|HEB.8.1-4,NUM.1,NUM.2,NUM.3|HEB.8.5-13,EXO.25,JER.31,EZK.11|HEB.9.1-5,EXO.36,EXO.37,NUM.4|HEB.9.4-5,NUM.17,1SA.4,1SA.5,1SA.6|HEB.9.6-28,EXO.24,LEV.17,NUM.19|HEB.10,PSA.40,ISA.26,JOS.10|HEB.10.23-25|HEB.11.1-19,GEN.5,GEN.23,EZK.14|HEB.11.20-31,GEN.48,JOS.2,JOS.6|HEB.11.32-33,JDG.5,JDG.6,JDG.7,JDG.8|HEB.11.32-34,JDG.11,JDG.12,JDG.13|HEB.11.32-34,JDG.14,JDG.15,JDG.16|HEB.11.32-40,1SA.1,2SA.8,JER.37|HEB.11.6|HEB.12.1-17,PRO.4,GEN.27,GEN.36|HEB.12.18-29,EXO.19,DEU.4,HAG.2|HEB.13,DEU.31,LEV.4,HOS.14|2TI.1,2TI.2,NUM.16,1CH.9,JOB.8|2TI.3,EXO.7,EXO.8,PSA.119.97-104,2CH.34|2TI.4,NUM.28,1SA.17,PSA.28,PSA.121|PRO.4.26|2PE.1,2SA.23,PSA.145,PSA.119.105-128|2PE.2,PRO.26,NUM.22,NUM.26|2PE.3,PSA.56,JER.23,EZK.12|JUD.1,DEU.2,DEU.34,AMO.4|1JN.1,ISA.2,JER.2,PRO.28|1JN.2,PRO.27,PSA.119.137-176,EZK.6,AMO.2|2PE.3.8-9|1JN.3,PSA.17,GEN.4,JDG.9,EZK.33|1JN.4,2KI.6,2KI.7,JER.29|1JN.5,EXO.23,PSA.128,JER.14|2JN.1,3JN.1,DEU.10,PSA.52|REV.1,DAN.7,JER.36,EZK.43|REV.2,1KI.16,2KI.9,PSA.139,ISA.30|1JN.5.20|REV.3,PRO.13,EZK.48,HOS.12|REV.4,DEU.33,1KI.22,EZK.1|REV.5,GEN.49,1CH.29,PSA.141,PSA.149|REV.6,ZEP.1,PSA.76,JER.24,NAM.1|REV.7.1-8,1CH.4,1CH.5,1CH.6,1CH.7|REV.7.9-17,ISA.49,PSA.3,2KI.24|REV.3.19-20|REV.8,EXO.10,EZK.32,EZK.38|REV.9,PSA.11,JOB.3,JOB.28,JOL.1|REV.10,EZK.2,EZK.3|REV.11,ZEC.4,2SA.3,2KI.2,2CH.5|REV.12,ZEC.3,GEN.37|REV.13,JER.15,JER.43,EXO.15,2KI.25|REV.12.11|REV.14,JOL.3,ISA.20,ISA.21,ISA.63|REV.15,EXO.38,PSA.86,PSA.98,PSA.111|REV.16,DEU.28,ZEP.3|REV.17,JER.27,JER.28,JER.39,JER.47|REV.18.1-20,ISA.47,EZK.27,ZEP.2,EZR.9|REV.18.21-24,JER.51,ISA.23,EZK.26,NAM.3|REV.17.14|REV.19,PSA.93,PSA.134,EZK.44|REV.20,PSA.87,EZK.7,EZK.39|REV.21,ISA.65,NEH.11,EZK.40,ZEC.2|REV.22,DEU.12,ZEC.14,PSA.46|PSA.46.10".split("|").map((d) => d.split(",")),
+  };
+  const TOTAL = PLAN.days.length;
+
+  // Note „Știai că?” scrise dinainte, pe zile din plan (nu cer generare).
+  const PREGEN = {"284":[{"t":"passage","title":"Chivotul pierdut și toiagul care a înflorit","refs":[{"label":"Evrei 9:4-5","book":"HEB","ch":9,"v":"4-5"},{"label":"Numeri 17","book":"NUM","ch":17,"v":""},{"label":"1 Samuel 4","book":"1SA","ch":4,"v":""},{"label":"1 Samuel 5","book":"1SA","ch":5,"v":""},{"label":"1 Samuel 6","book":"1SA","ch":6,"v":""}]},{"t":"thread","text":"În Evrei 9:4, printre lucrurile din chivot, apare „toiagul lui Aaron, care înfrunzise”. Numeri 17 arată de unde vine; 1 Samuel 4–6 urmărește chivotul, capturat și apoi trimis înapoi de filisteni. Peste tot aceeași întrebare: „Cine poate sta înaintea Domnului…?” (1 Samuel 6:20)."},{"t":"context","label":"Cine","ref":"Evrei 9:4-5","text":"Autorul scrisorii către Evrei nu-și spune numele. Scrie unor creștini care cunoșteau bine cortul și jertfele, probabil evrei. Aici face inventarul Locului Preasfânt, apoi se oprește: „Nu este vremea să vorbim acum cu de-amănuntul” (v. 5)."},{"t":"context","label":"Înainte","ref":"Numeri 17","text":"În capitolul 16, Core și oamenii lui au contestat preoția lui Aaron și au murit. A doua zi, tot poporul a cârtit din nou împotriva lui Moise și a lui Aaron. Acum Dumnezeu vrea să încheie discuția o dată pentru totdeauna."},{"t":"context","label":"Când","ref":"1 Samuel 4–6","text":"Probabil în secolul al XI-lea î.Hr., înainte ca Israel să aibă rege. Eli era preot la Silo, unde stătea chivotul, iar tânărul Samuel abia începuse să fie cunoscut în tot Israelul (4:1)."},{"t":"context","label":"Cine","ref":"1 Samuel 4–6","text":"Filistenii erau un popor venit de departe, cel mai probabil din lumea Mării Egee, așezat pe coasta de sud a Canaanului. Un studiu ADN din 2019, pe schelete din Ascalon, a găsit la primii filisteni urme de strămoși din sudul Europei."},{"t":"context","label":"Unde","ref":"1 Samuel 4–6","text":"Lupta are loc lângă Afec, la marginea câmpiei de pe coastă. Chivotul trece apoi prin trei din cele cinci cetăți filistene: Asdod, Gat și Ecron. La final ajunge la Bet-Șemeș, o cetate israelită de lângă granița cu filistenii."},{"t":"fact","ref":"Evrei 9:4","num":"586 î.Hr.","title":"Chivotul pe care nu-l mai găsește nimeni","text":"Pe vremea lui Solomon, în chivot mai erau doar cele două table de piatră (1 Împărați 8:9). După ce babilonienii au distrus Templul, în 586 î.Hr., urma lui se pierde. Nimeni nu știe sigur ce s-a ales de el."},{"t":"fact","ref":"Numeri 17:8","num":"1 zi","title":"Un băț uscat care face migdale","text":"Pe un pom viu, de la mugur la migdală trec luni. Toiagul lui Aaron trece prin toate etapele de pe o zi pe alta. Migdalul e primul pom care înflorește în Israel, la sfârșitul iernii; numele lui ebraic vine de la „a veghea”."},{"t":"fact","ref":"1 Samuel 4:12","num":"30+ km","title":"Un maraton cu vești proaste","text":"De lângă Afec până la Silo sunt peste 30 de kilometri în linie dreaptă, cu urcuș spre munți. Omul i-a parcurs „în aceeași zi”. O veche tradiție evreiască spune că alergătorul ar fi fost tânărul Saul, viitorul rege."},{"t":"fact","ref":"1 Samuel 4:18","num":"","title":"„Greu” și „slavă”, din aceeași rădăcină","text":"Eli cade și moare, „căci era om bătrân și greu”. În ebraică, „greu” (kaved) și „slavă” (kavod) vin din aceeași rădăcină. Așa că numele I-Cabod sună dureros: „greutatea” lui Dumnezeu, slava Lui, a plecat din Israel (v. 21)."},{"t":"fact","ref":"1 Samuel 5:2","num":"","title":"Dagon nu era, probabil, zeu-pește","text":"Traducerea noastră notează „Zeul pește”, după o explicație veche: în ebraică, „dag” înseamnă pește. Dar Dagon era venerat în Siria cu mult înainte de filisteni, iar mulți cercetători cred că era zeul grânelor; „dagan” înseamnă grâne."},{"t":"fact","ref":"1 Samuel 6:12","num":"≈ 12 km","title":"Vacile care și-au lăsat vițeii","text":"O vacă cu vițel mic se întoarce de obicei la el. Vacile acestea, nedeprinse cu jugul, trag drept spre Bet-Șemeș, la vreo 12 km de Ecron, „mugind”, dar fără să se abată. Asta era proba propusă de ghicitori (v. 9)."},{"t":"fact","ref":"1 Samuel 6:19","num":"70","title":"Un număr pus între paranteze","text":"Ebraica pune alături, fără „și”, două numere: 70 de oameni, 50.000 de oameni. Pentru un oraș mic ca Bet-Șemeș, mulți cred că 50.000 e o greșeală veche de copist. Iosif Flaviu, istoric evreu, pomenește doar 70."},{"t":"term","word":"chivotul legământului","orig":"aron ha-berit","text":"O ladă de lemn de salcâm (acacia din deșert, nu salcâmul de la noi), îmbrăcată în aur. Avea cam 1,1 m lungime și 0,7 m lățime și înălțime (Exodul 25:10) și se purta pe doi drugi, ca o targă."},{"t":"term","word":"capacul ispășirii","orig":"hilastḗrion","text":"Capacul de aur curat al chivotului, cu doi heruvimi deasupra. Aici stropea marele preot sânge, o dată pe an (Leviticul 16:14). Pavel folosește același cuvânt grecesc despre Isus, în Romani 3:25."},{"t":"term","word":"toiag","orig":"matteh","text":"Bățul de drum al păstorului sau al căpeteniei, semn al autorității lui. În ebraică, același cuvânt înseamnă și „seminție”. Fiecare toiag din cort stătea pentru o seminție întreagă."},{"t":"term","word":"heruvimi","orig":"keruvim","text":"Ființe înaripate care, în Orientul antic, păzeau sau sprijineau tronurile regilor. De aceea Dumnezeu e numit Cel „care șade între heruvimi” (1 Samuel 4:4): chivotul era socotit locul tronului Său nevăzut."},{"t":"term","word":"bube la șezut","orig":"ʿofalim","text":"Cuvântul ebraic înseamnă „umflături”. Pentru că în poveste apar și șoareci (6:4–5), unii cercetători cred că era o molimă purtată de rozătoare, poate ciuma bubonică. Nu se poate ști sigur."},{"t":"term","word":"domnitorii","orig":"seranim","text":"Un titlu folosit în Biblie doar pentru conducătorii filistenilor, câte unul pentru fiecare din cele cinci cetăți (6:17). Unii îl leagă de grecescul „tyrannos”, dar e doar o ipoteză."},{"t":"today","then":"Bătrânii au adus chivotul pe câmpul de luptă ca pe o garanție: dacă e cu noi, nu avem cum pierde (4:3).","now":"Ca un verset pus ca fundal pe telefon înainte de examen, deși n-ai mai vorbit cu Dumnezeu de săptămâni. Semnul e acolo, relația lipsește."},{"t":"today","then":"Vestea mergea cât de repede alerga un om. Hainele sfâșiate și țărâna pe cap spuneau totul de departe, înainte de orice cuvânt (4:12).","now":"Noi aflăm o tragedie în câteva secunde, dintr-o notificare. Eli a stat lângă drum, pe scaun, cu inima neliniștită, așteptând un om care alerga."},{"t":"today","then":"În chivot se păstrau tablele Legii, mana din pustie și toiagul lui Aaron: dovezi a ce făcuse Dumnezeu (Evrei 9:4).","now":"Ca o cutie în care familia ține actele, pozele vechi și verigheta bunicii. Obiecte mici, care spun o poveste mare."},{"t":"watch","text":"În 1 Samuel 4:3, bătrânii se întreabă de ce i-a lăsat Domnul să fie bătuți. Urmărește dacă Îl întreabă și pe El sau doar își fac un plan."},{"t":"watch","text":"Dagon cade de două ori (5:3–4). Ce e diferit a doua oară? Gândește-te ce înseamnă un zeu rămas fără cap și fără mâini."},{"t":"watch","text":"În Numeri 17:10, vezi de ce trebuie păstrat toiagul: „și să nu moară”. Semnul era și un avertisment, și o ocrotire."},{"t":"question","text":"Când îți e frică, pe ce te bazezi: pe Dumnezeu Însuși sau pe un „chivot” al tău?"}],"285":[{"t":"passage","title":"Sânge, cenușă și un legământ nou","refs":[{"label":"Evrei 9:6-28","book":"HEB","ch":9,"v":"6-28"},{"label":"Exodul 24","book":"EXO","ch":24,"v":""},{"label":"Leviticul 17","book":"LEV","ch":17,"v":""},{"label":"Numeri 19","book":"NUM","ch":19,"v":""}]},{"t":"thread","text":"Evrei 9 se sprijină pe trei texte pe care le citești azi: legământul pecetluit cu sânge la Sinai (Exodul 24, citat în Evrei 9:20), regula că viața e în sânge (Leviticul 17:11) și cenușa vacii roșii (Numeri 19; Evrei 9:13). Toate trei duc la Hristos."},{"t":"context","label":"Înainte","ref":"Evrei 9:6-28","text":"În versetele 1–5 ai văzut cum era împărțit cortul: Locul Sfânt și Locul Preasfânt. Acum autorul spune cine intra acolo, cât de des și ce aducea cu el."},{"t":"context","label":"Cine","ref":"Evrei 9:6-28","text":"Cititorii erau, probabil, creștini evrei tentați să se întoarcă la vechile jertfe. Autorul le arată că vechiul cort era doar o „asemănare” (v. 9), iar realitatea este Hristos."},{"t":"context","label":"Unde","ref":"Exodul 24","text":"La poalele muntelui Sinai, cam la trei luni după ieșirea din Egipt (Exodul 19:1). Locul exact al muntelui e discutat; tradiția îl așază în sudul peninsulei Sinai."},{"t":"context","label":"Înainte","ref":"Exodul 24","text":"În capitolele 20–23, Dumnezeu a dat cele Zece Porunci și legi pentru viața de zi cu zi. Acum legământul se încheie oficial, cu martori și jertfe."},{"t":"context","label":"Înainte","ref":"Leviticul 17","text":"Capitolul 16 descrie Ziua Ispășirii, singura zi din an în care marele preot intra în Locul Preasfânt. Exact despre ea vorbește Evrei 9:7."},{"t":"context","label":"Înainte","ref":"Numeri 19","text":"În Numeri 16–17 muriseră mii de oameni, iar poporul spunea: „Oricine se apropie de cortul Domnului moare” (17:13). Capitolul 19 răspunde la o întrebare practică: ce faci după ce ai atins un mort?"},{"t":"fact","ref":"Evrei 9:7","num":"sec. XIII","title":"Frânghia de la picior, doar o legendă","text":"Se spune des că marele preot intra cu o frânghie legată de picior, ca să fie scos dacă murea înăuntru. Nu apare nici în Biblie, nici în Mișna. Cea mai veche sursă cunoscută e Zoharul, o carte mistică evreiască din secolul al XIII-lea."},{"t":"fact","ref":"Exodul 24:6","num":"½","title":"Jumătate pe altar, jumătate pe oameni","text":"Moise împarte sângele în două: jumătate pe altar, jumătate în străchini (v. 6). Abia după ce poporul promite „Vom face și vom asculta”, Moise îl stropește și pe el. Același sânge ajunge pe altar și pe oameni."},{"t":"fact","ref":"Exodul 24:8","num":"","title":"Cuvinte pe care Isus le-a reluat","text":"„Iată sângele legământului”, spune Moise la Sinai. La ultima cină, Isus ia paharul și spune: „acesta este sângele Meu, sângele legământului celui nou” (Matei 26:28). Evrei 9:20 citează și el scena de la Sinai."},{"t":"fact","ref":"Exodul 24:10","num":"","title":"„Safirul” era, probabil, lapislazuli","text":"Mulți cercetători cred că „safirul” din Antichitate era lapislazuli: o piatră albastru-închis, cu sclipiri aurii, ca un cer înstelat. Se aducea tocmai din munții Afganistanului, iar egiptenii o foloseau din belșug la bijuterii."},{"t":"fact","ref":"Leviticul 17:12","num":"","title":"Regula pe care au păstrat-o apostolii","text":"Interdicția de a mânca sânge e una dintre cele patru reguli pe care apostolii le-au cerut și creștinilor dintre neamuri (Fapte 15:20). Evreii religioși o țin și azi: carnea „cușer” e înmuiată și sărată ca să iasă sângele."},{"t":"fact","ref":"Numeri 19:2","num":"9","title":"Doar nouă vaci roșii arse vreodată","text":"După Mișna, o culegere de tradiții evreiești, de la Moise până la distrugerea Templului, în anul 70, s-au ars doar nouă vaci roșii (după unii rabini, șapte). Două fire de păr negre sau albe erau de ajuns ca vaca să fie respinsă."},{"t":"fact","ref":"Numeri 19:7","num":"","title":"Legea care l-ar fi încurcat pe Solomon","text":"Cenușa vacii îl curăță pe cel necurat, dar îi face necurați pe cei care o pregătesc (v. 7–10). Rabinii o dau ca exemplu de poruncă pe care mintea n-o poate explica. O tradiție spune că nici înțeleptul Solomon nu i-a găsit tâlcul."},{"t":"term","word":"testament","orig":"diathḗkē","text":"Cuvântul grecesc înseamnă și „legământ”, și „testament”. Autorul folosește ambele sensuri: un testament intră în vigoare abia la moartea celui care l-a făcut (v. 16–17)."},{"t":"term","word":"ispășire","orig":"kipper","text":"Vine din rădăcina ebraică k-p-r, pe care cercetătorii o leagă de „a acoperi” sau de „a șterge”. Din ea vin și Yom Kippur, Ziua Ispășirii, și „capacul ispășirii” de pe chivot."},{"t":"term","word":"idolii","orig":"seʿirim","text":"Ebraica spune de fapt „țapii”: ființe-demon închipuite ca niște țapi, cărora unii le aduceau jertfe pe câmp (v. 5, 7). De aceea, orice jertfă trebuia adusă la cort, la preot."},{"t":"term","word":"isop","orig":"ʾezov","text":"Probabil maghiranul sirian, o plantă mică și aromată, cu tulpini păroase care țin bine apa. Legat în mănunchi, era bun de stropit (Numeri 19:18). Arabii îi spun „zaatar”, ca și amestecului de condimente făcut din el."},{"t":"term","word":"cârmâz","orig":"tolaʿat șani","text":"Un roșu aprins făcut din niște insecte mici care trăiesc pe stejari; ebraica spune literal „viermele stacojiu”. În Evrei 9:19 apare ca „lână stacojie”. Cuvântul românesc vine din turcă și e rudă cu „carmin”."},{"t":"term","word":"apa de curățire","orig":"mê niddâ","text":"Apă de izvor amestecată cu cenușă din vaca roșie (v. 17). Cu ea era stropit, a treia și a șaptea zi, cine atinsese un mort. Cine nu se curățea „pângărește cortul Domnului” (v. 13)."},{"t":"today","then":"Legământul de la Sinai s-a încheiat cu jertfe, sânge, citirea cu glas tare a cărții și o masă împreună (Exodul 24:5–11).","now":"Noi semnăm la notar, cu buletinul și ștampila. Forma e alta, ideea e aceeași: un angajament serios, cu martori, din care nu te retragi ușor."},{"t":"today","then":"Un israelit nu mânca deloc sânge. Nici la vânătoare: sângele se vărsa pe pământ și se acoperea cu țărână (Leviticul 17:13).","now":"De Ignat, la tăiatul porcului, mulți români fac sângerete. Mulți creștini evanghelici nu le mănâncă, tocmai din cauza unor versete ca acestea."},{"t":"today","then":"Cine atingea un mort era necurat șapte zile și trebuia stropit cu apa de curățire a treia și a șaptea zi (Numeri 19:11–12).","now":"La noi, după înmormântare, mulți se spală pe mâini cu apa pusă la poartă. Obiceiul e altul, dar ideea că moartea „murdărește” e foarte veche."},{"t":"watch","text":"Numără de câte ori apare „o dată” sau „o singură dată” în Evrei 9:7–28. Ce vrea autorul să nu uiți?"},{"t":"watch","text":"Pune alături Evrei 9:19–20 și Exodul 24:6–8. Ce detalii apar doar în Evrei?"},{"t":"watch","text":"În Leviticul 17:11 găsești motivul din spatele tuturor jertfelor. Subliniază-l: de ce tocmai sângele?"},{"t":"question","text":"Ce înseamnă pentru tine, concret, că Isus Se înfățișează înaintea lui Dumnezeu „pentru noi” (Evrei 9:24)?"}],"286":[{"t":"passage","title":"Iată-Mă, vin să fac voia Ta","refs":[{"label":"Evrei 10","book":"HEB","ch":10,"v":""},{"label":"Psalmul 40","book":"PSA","ch":40,"v":""},{"label":"Isaia 26","book":"ISA","ch":26,"v":""},{"label":"Iosua 10","book":"JOS","ch":10,"v":""}]},{"t":"thread","text":"Evrei 10 pune în gura lui Isus cuvintele din Psalmul 40: „Iată-Mă, vin să fac voia Ta”. Tot Evrei 10 împrumută imagini din Isaia 26. Iar în Iosua 10, vrăjmașii puși sub picioare ilustrează pe viu versetul din Evrei 10:13."},{"t":"context","label":"Cine","ref":"Evrei 10","text":"Autorul nu își spune numele. S-au propus Pavel, Barnaba sau Apolo, dar încă din secolul al III-lea Origen spunea că numai Dumnezeu știe. Scrie unor creștini obosiți de persecuție, tentați să renunțe (v. 32–39)."},{"t":"context","label":"Înainte","ref":"Evrei 10","text":"În capitolele 8–9, autorul a comparat cortul întâlnirii și Ziua Ispășirii cu lucrarea lui Hristos. Capitolul 10 încheie argumentul, iar de la versetul 19 trece la îndemnuri practice."},{"t":"context","label":"Cine","ref":"Psalmul 40","text":"Titlul spune: „Către mai-marele cântăreților. Un psalm al lui David”. Psalmul începe cu mulțumire pentru o izbăvire (v. 1–3) și se încheie cu un nou strigăt după ajutor (v. 13–17)."},{"t":"context","label":"Când","ref":"Isaia 26","text":"Isaia a profețit la Ierusalim cam între 740 și 700 î.Hr. Capitolele 24–27 sunt numite adesea Apocalipsa lui Isaia, pentru că privesc spre sfârșitul istoriei, spre „ziua aceea” (v. 1)."},{"t":"context","label":"Înainte","ref":"Isaia 26","text":"În capitolul 25, Dumnezeu pregătește pe munte un ospăț pentru toate popoarele și promite că va nimici moartea pe vecie. Capitolul 26 e cântarea celor care așteaptă împlinirea."},{"t":"context","label":"Înainte","ref":"Iosua 10","text":"Gabaoniții i-au păcălit pe israeliți: s-au prefăcut că vin din țară îndepărtată, cu pâine mucegăită și burdufuri cârpite, și au obținut un legământ de pace (cap. 9). Acum vecinii lor îi atacă."},{"t":"context","label":"Unde","ref":"Iosua 10","text":"Gabaonul e satul el-Jib, la vreo 10 km nord-vest de Ierusalim; acolo s-au găsit toarte de ulcioare cu numele cetății. Din Ghilgal, lângă Ierihon, Iosua a urcat toată noaptea (v. 9): circa 30 km și aproape 1.000 m diferență de nivel."},{"t":"fact","ref":"Evrei 10:5","num":"","title":"Urechi străpunse sau un trup?","text":"În Psalmul 40:6 scrie „mi-ai străpuns urechile” (în ebraică, literal: urechi mi-ai săpat). Evrei citează Septuaginta, traducerea greacă folosită de primii creștini, unde apare „Mi-ai pregătit un trup”."},{"t":"fact","ref":"Evrei 10:12","num":"0 scaune","title":"În cort nu exista niciun scaun","text":"Printre obiectele cortului întâlnirii nu era niciun scaun. În greacă, versetul 11 spune literal că orice preot stă în picioare zi de zi. Hristos, în schimb, „S-a așezat” (v. 12): lucrarea Lui e gata."},{"t":"fact","ref":"Psalmul 40:13","num":"5 versete","title":"Un psalm care apare de două ori","text":"Versetele 13–17 se regăsesc aproape cuvânt cu cuvânt în Psalmul 70. Probabil această rugăciune scurtă era cântată și separat, ca strigăt de ajutor pentru vremuri grele."},{"t":"fact","ref":"Isaia 26:19","num":"","title":"Învierea, cântată în Vechiul Testament","text":"Alături de Daniel 12:2, e unul dintre cele mai limpezi texte din Vechiul Testament despre învierea morților. Imaginea rouei vine din viața de zi cu zi: în Israel vara aproape nu plouă, iar roua de dimineață ține plantele în viață."},{"t":"fact","ref":"Isaia 26:20","num":"","title":"Isaia, citat în Evrei 10","text":"Expresia „foarte puțină vreme” din Evrei 10:37 e luată din Isaia 26:20, după traducerea greacă; Cornilescu are aici „câteva clipe”. Și focul care mistuie vrăjmașii (Evrei 10:27) amintește de Isaia 26:11."},{"t":"fact","ref":"Iosua 10:10","num":"66 d.Hr.","title":"Bet-Horon, defileul bătăliilor","text":"Coborârea îngustă de la Bet-Horon spre câmpie a fost scena mai multor bătălii. Acolo Iuda Macabeul a bătut o armată siriană, iar în anul 66 d.Hr. rebelii evrei au provocat o înfrângere grea armatei romane a lui Cestius Gallus."},{"t":"fact","ref":"Iosua 10:13","num":"≈ 1 zi","title":"Soarele oprit: ce știm și ce nu","text":"Textul nu explică cum s-a întâmplat. Unii văd o minune cosmică la propriu, alții o lumină prelungită sau limbaj poetic, citat din „Cartea Dreptului”. Povestea de pe internet despre o zi lipsă descoperită de NASA e însă o legendă urbană."},{"t":"term","word":"prinos","orig":"prosforá","text":"Un dar adus lui Dumnezeu. În același loc din Psalmul 40:6 apare „dar de mâncare”: ofranda din făină, untdelemn și tămâie descrisă în Leviticul 2."},{"t":"term","word":"perdeaua dinăuntru","orig":"katapétasma","text":"Draperia țesută cu heruvimi (Exodul 26:31) care despărțea Locul Preasfânt de restul cortului. Doar marele preot trecea dincolo de ea, o dată pe an. Evangheliile spun că perdeaua Templului s-a rupt în două la moartea lui Isus (Matei 27:51)."},{"t":"term","word":"groapa pieirii","orig":"bor șaon","text":"Bor era o groapă sau o cisternă săpată în stâncă pentru apa de ploaie. Secată, rămânea cu mâl pe fund. Profetul Ieremia a fost coborât într-una și s-a afundat în noroi (Ieremia 38:6)."},{"t":"term","word":"chezășuiești","orig":"","text":"Garantezi, te pui chezaș. În ebraică, versetul spune de două ori cuvântul șalom (pace): repetarea arată o pace deplină. Cornilescu păstrează ecoul: „pacea; da, pacea”."},{"t":"term","word":"Adoni-Țedec","orig":"adoni țedeq","text":"Numele înseamnă probabil: Domnul meu este dreptate. Seamănă cu al lui Melhisedec, „Împărat al neprihănirii” (Evrei 7:2), tot împărat al Salemului, pe care tradiția îl identifică cu Ierusalimul."},{"t":"term","word":"Cartea Dreptului","orig":"Sefer haiașar","text":"O carte veche de poezii, probabil despre biruințele lui Israel, pierdută azi. Mai este citată în 2 Samuel 1:18, la cântarea de jale a lui David pentru Saul și Ionatan."},{"t":"term","word":"grumajii","orig":"","text":"Gâturile, cefele. Piciorul pus pe grumazul celui învins era un semn de biruință în tot Orientul Antic. Tutankamon avea chiar un scăunel pentru picioare decorat cu dușmani legați."},{"t":"today","then":"Iertarea cerea un animal din turma ta, adus la altar, iar ziua marii ispășiri revenea în fiecare an (v. 1–3).","now":"Ca o rată la bancă din care plătești doar dobânda: dai lună de lună, dar datoria nu scade. Evrei 10 vorbește despre o plată făcută „o dată pentru totdeauna” (v. 10)."},{"t":"today","then":"Iosua și oamenii lui au urcat toată noaptea ca să-și țină cuvântul dat gabaoniților, deși aceștia îi păcăliseră.","now":"Ca și cum ai conduce toată noaptea ca să ajuți pe cineva care te-a mințit cândva, doar pentru că i-ai promis."},{"t":"watch","text":"Pune alături Evrei 10:5–7 și Psalmul 40:6–8. Ce cuvinte se schimbă și cine le rostește în Evrei?"},{"t":"watch","text":"Trei îndemnuri la rând în Evrei 10:22–24 și trei cuvinte-cheie: credință, nădejde, dragoste. Le găsești?"},{"t":"watch","text":"De câte ori spune Iosua 10 cine luptă de fapt? Urmărește versetele 8, 10, 11, 14 și 42."},{"t":"question","text":"Ce încerci să plătești singur, iar și iar, deși Isus a plătit deja „o dată pentru totdeauna”?"}],"287":[{"t":"passage","title":"Să nu părăsim adunarea noastră","refs":[{"label":"Evrei 10:23-25","book":"HEB","ch":10,"v":"23-25"}]},{"t":"context","label":"Cine","text":"Autorul scrie unor creștini care plătiseră deja un preț pentru credință: batjocură în public, frați în închisoare, averi luate (v. 32–34). Acum unii obosiseră și începuseră să lipsească de la adunare (v. 25)."},{"t":"context","label":"Înainte","text":"Chiar înainte, autorul a spus că prin sângele lui Isus avem „o intrare slobodă în Locul Preasfânt” (v. 19). Pentru că drumul spre Dumnezeu e deschis, urmează îndemnurile de azi."},{"t":"fact","ref":"Evrei 10:24","num":"","title":"Un cuvânt folosit și pentru o ceartă","text":"Cuvintele „ca să ne îndemnăm” traduc grecescul paroxysmós, de unde vine și paroxism. Același cuvânt descrie cearta aprinsă dintre Pavel și Barnaba (Faptele 15:39). Aici toată energia aceea e întoarsă spre dragoste."},{"t":"fact","ref":"Evrei 10:25","num":"2 ori","title":"Adunarea, rudă cu sinagoga","text":"Pentru „adunarea”, autorul folosește grecescul episynagōgḗ, din aceeași familie cu sinagogă. În Noul Testament mai apare doar în 2 Tesaloniceni 2:1, despre strângerea credincioșilor la Hristos când va reveni."},{"t":"fact","ref":"Evrei 10:25","num":"256 d.Hr.","title":"Primele biserici erau case","text":"Primii creștini se adunau prin case (Romani 16:5). Una dintre cele mai vechi biserici descoperite, la Dura-Europos, în Siria, e tot o casă adaptată. S-a păstrat fiindcă a fost umplută cu pământ, ca să întărească zidul, la asediul din 256 d.Hr."},{"t":"term","word":"fără șovăire","orig":"aklinḗs","text":"Grecescul înseamnă literal: care nu se înclină, ca un zid drept care nu se apleacă într-o parte. În tot Noul Testament, cuvântul apare doar aici."},{"t":"term","word":"mărturisirea","orig":"homología","text":"Literal: a spune același lucru. Era declarația de credință rostită cu voce tare, probabil la botez și în adunare. Nu o părere ținută pentru tine, ci un angajament făcut în fața altora."},{"t":"term","word":"ziua","orig":"","text":"Pentru primii creștini, „ziua” fără alt nume era ziua revenirii lui Hristos și a judecății. Autorul o vede aproape și trage concluzia: să ne strângem mai des, nu mai rar."},{"t":"today","then":"Biserica se aduna într-o casă, în jurul unei mese, probabil câteva zeci de oameni. Se observa repede cine lipsește.","now":"Într-o biserică mare sau la un live, poți lipsi luni întregi fără să te caute cineva. „Să veghem unii asupra altora” (v. 24) poate însemna un simplu mesaj către cel care a lipsit."},{"t":"today","then":"Să fii creștin putea aduce batjocură în public sau chiar pierderea averii (v. 33–34).","now":"Pe noi ne țin acasă mai degrabă oboseala, un examen sau gândul că lipsim doar duminica asta. Prețul e mai mic, dar ispita e aceeași: „cum au unii obicei” (v. 25)."},{"t":"watch","text":"Pe ce se sprijină îndemnul din v. 23: nu pe tăria noastră, ci pe faptul că „credincios este Cel ce a făcut făgăduința”."},{"t":"watch","text":"Cuvintele „unii asupra altora” și „unii pe alții” (v. 24–25). Niciunul dintre îndemnurile de azi nu se poate împlini de unul singur."},{"t":"question","text":"Pe cine ai observat că lipsește în ultima vreme și ce poți face săptămâna aceasta pentru el?"}],"288":[{"t":"passage","title":"Străini pe pământ, cu ochii spre cetate","refs":[{"label":"Evrei 11:1-19","book":"HEB","ch":11,"v":"1-19"},{"label":"Geneza 5","book":"GEN","ch":5,"v":""},{"label":"Geneza 23","book":"GEN","ch":23,"v":""},{"label":"Ezechiel 14","book":"EZK","ch":14,"v":""}]},{"t":"thread","text":"Evrei 11 enumeră oameni care au crezut fără să vadă împlinirea. Azi îi întâlnești la sursă: Enoh și Noe (Geneza 5), Avraam și Sara (Geneza 23), apoi Noe ca model de om drept (Ezechiel 14). Credința nu se moștenește și privește dincolo de mormânt."},{"t":"context","label":"Cine","ref":"Evrei 11:1-19","text":"Autorul scrisorii nu își spune numele. Scrie unor creștini de origine evreiască, obosiți de presiuni și tentați să renunțe (Evrei 10:32–39). Mulți cercetători o datează înainte de anul 70 d.Hr., când Templul încă stătea în picioare."},{"t":"context","label":"Înainte","ref":"Evrei 11:1-19","text":"Capitolul 10 se încheie cu: „Noi însă nu suntem din aceia care dau înapoi”. Capitolul 11 e dovada: o galerie de oameni care n-au dat înapoi, deși n-au văzut împlinirea."},{"t":"context","label":"Înainte","ref":"Geneza 5","text":"În capitolul 4, Cain îl ucide pe Abel, iar urmașul lui, Lameh, se laudă că a ucis un om pentru o rană. Apoi se naște Set, „o altă sămânță în locul lui Abel” (Geneza 4:25). De la el pornește lista de azi."},{"t":"context","label":"Unde","ref":"Geneza 23","text":"La Hebron, numit atunci Chiriat-Arba, în munții de la sud de Ierusalim, la vreo 30 km. Azi e un oraș mare din Cisiordania."},{"t":"context","label":"Înainte","ref":"Geneza 23","text":"În capitolul 22, Avraam fusese gata să-l jertfească pe Isaac, iar Dumnezeu l-a oprit. Evrei 11:17–19 vorbește exact despre scena aceea. Acum moare Sara, la 127 de ani (v. 1)."},{"t":"context","label":"Când","ref":"Ezechiel 14","text":"Ezechiel fusese dus în robie la Babilon în 597 î.Hr., odată cu regele și fruntașii lui Iuda. Ierusalimul încă stătea în picioare; avea să cadă în 586 î.Hr. Capitolul 13 tocmai demascase prorocii mincinoși care promiteau pace."},{"t":"context","label":"Cine","ref":"Ezechiel 14","text":"Câțiva bătrâni, conducători ai exilaților, vin și se așază înaintea prorocului (v. 1), ca să-L întrebe pe Dumnezeu. Dar Dumnezeu vede ce poartă ei înăuntru: „idolii în inimă” (v. 3)."},{"t":"fact","ref":"Evrei 11:5","num":"","title":"Evrei citește Geneza în greacă","text":"Unde ebraica spune că Enoh „a umblat cu Dumnezeu”, vechea traducere greacă (Septuaginta) zice că a fost plăcut lui Dumnezeu. Evrei 11:5 urmează textul grecesc, de aceea vorbește despre mărturia că „este plăcut lui Dumnezeu”."},{"t":"fact","ref":"Evrei 11:19","num":"","title":"Isaac, o „pildă” a învierii","text":"În greacă, finalul versetului 19 spune că Avraam l-a primit înapoi pe Isaac „en parabolē”, literal „în pildă”. Isaac coborât de pe altar devine o imagine dinainte a învierii."},{"t":"fact","ref":"Geneza 5:27","num":"969 de ani","title":"Metusala moare în anul potopului","text":"Adună cifrele din capitol: Metusala avea 369 de ani când s-a născut Noe (v. 25, 28). Potopul vine când Noe are 600 de ani (Geneza 7:6). Deci, după cifrele textului ebraic, Metusala moare chiar în anul potopului."},{"t":"fact","ref":"Geneza 5:24","num":"al 7-lea","title":"Al șaptelea, pe două drumuri","text":"Numără de la Adam: al șaptelea pe linia lui Set e Enoh, care „a umblat cu Dumnezeu”. Pe linia lui Cain, al șaptelea e Lameh, care se lăuda cu răzbunarea (Geneza 4:18–24). Iuda 14 îl numește pe Enoh „al șaptelea patriarh de la Adam”."},{"t":"fact","ref":"Geneza 23:16","num":"≈ 4,5 kg","title":"Un preț piperat, cântărit pe loc","text":"Patru sute de sicli înseamnă cam 4,5 kg de argint, cântărit pe loc (v. 16): monedele nu fuseseră încă inventate. Pare un preț mare: mult mai târziu, Ieremia a plătit pe un ogor 17 sicli (Ieremia 32:9)."},{"t":"fact","ref":"Geneza 23:19","num":"","title":"Peștera e venerată și azi","text":"După tradiție, peștera Macpela se află sub o incintă uriașă de piatră din Hebron, cu ziduri ridicate pe vremea lui Irod cel Mare. Azi e împărțită între o moschee și o sinagogă. Acolo vor fi îngropați și Isaac, Rebeca, Lea și Iacov (Geneza 49:31; 50:13)."},{"t":"fact","ref":"Ezechiel 14:14","num":"","title":"Despre care Daniel e vorba?","text":"Daniel din cartea lui Daniel trăia chiar atunci, la curtea din Babilon. Unii cercetători cred însă că e vorba de Danel, un rege drept din poemele vechi de la Ugarit, în Siria. Întrebarea rămâne deschisă."},{"t":"term","word":"încredere neclintită","orig":"hypóstasis","text":"Literal, „ceea ce stă dedesubt”: temelia, partea solidă. În unele papirusuri din Egipt cuvântul apare și pentru acte de proprietate, așa că unii cercetători îl înțeleg ca pe un „titlu” pentru ce încă nu vezi."},{"t":"term","word":"Noe","orig":"Nōaḥ","text":"Numele sună ca ebraicul pentru „odihnă”. Tatăl lui face un joc de cuvinte: „Acesta ne va mângâia” (v. 29), unde verbul ebraic, „naham”, sună asemănător. Lameh spera la o ușurare a trudei pe un pământ blestemat."},{"t":"term","word":"străin și venetic","orig":"gēr wətôšāb","text":"Un străin așezat printre localnici, dar fără pământ și fără drepturi depline. De aceea Avraam, deși bogat, trebuie să ceară voie ca să cumpere fie și un mormânt."},{"t":"term","word":"poarta cetății","orig":"","text":"Nu doar o intrare, ci „primăria” și „tribunalul” orașului. Acolo stăteau bătrânii și se încheiau înțelegerile, cu martori. De aceea textul subliniază: „în auzul tuturor celor ce treceau pe poarta cetății” (v. 10)."},{"t":"term","word":"idolii","orig":"gillûlîm","text":"Ezechiel folosește cel mai des pentru idoli un cuvânt disprețuitor, „gilulim”. Mulți cercetători îl leagă de cuvântul pentru bălegar. Iar aici idolii nu stau pe un altar, ci „în inimă” (v. 3)."},{"t":"term","word":"toiagul pâinii","orig":"maṭṭēh-leḥem","text":"Pâinea era „toiagul” pe care se sprijinea viața; a-l „sfărâma” însemna foamete. Cele patru pedepse din capitol (sabia, foametea, fiarele, ciuma) amintesc de avertismentele din Leviticul 26:22–26."},{"t":"today","then":"Avraam era bogat, dar în țara făgăduită nu avea nicio palmă de pământ. Singurul pământ pe care l-a cumpărat acolo a fost un mormânt.","now":"La noi, mulți bătrâni își cumpără din timp „locul de veci”. Pentru Avraam, locul de veci a fost singura bucată din țara promisă pe care a avut-o vreodată."},{"t":"today","then":"Bătrânii vin să-L întrebe pe Dumnezeu prin proroc, dar au deja în inimă ce vor (Ezechiel 14:3).","now":"Ca atunci când ceri un sfat doar ca să-ți confirme cineva ce ai hotărât deja."},{"t":"today","then":"Nici Noe, Daniel și Iov n-ar fi putut să-și scape copiii prin neprihănirea lor (Ezechiel 14:16–20).","now":"Credința nu se moștenește ca apartamentul bunicilor. Poți crește într-o familie credincioasă, dar încrederea în Dumnezeu rămâne alegerea ta."},{"t":"watch","text":"În Geneza 5 se repetă ca un refren „apoi a murit”. Caută singurul nume care rupe refrenul (v. 24), apoi recitește Evrei 11:5."},{"t":"watch","text":"Avraam se numește „străin și venetic” (Geneza 23:4). Evrei 11:13 spune la fel despre toți acești oameni: „străini și călători pe pământ”."},{"t":"watch","text":"În Ezechiel 14 revine de trei ori „nici fii, nici fiice” (v. 16, 18, 20). Apoi vine surpriza din v. 22."},{"t":"question","text":"Ce promisiune a lui Dumnezeu încă n-ai văzut împlinită și cum ar arăta să trăiești azi ca și cum ar fi sigură?"}],"289":[{"t":"passage","title":"Mâini încrucișate și o funie roșie","refs":[{"label":"Evrei 11:20-31","book":"HEB","ch":11,"v":"20-31"},{"label":"Geneza 48","book":"GEN","ch":48,"v":""},{"label":"Iosua 2","book":"JOS","ch":2,"v":""},{"label":"Iosua 6","book":"JOS","ch":6,"v":""}]},{"t":"thread","text":"Evrei 11:20–31 continuă lista credinței, iar azi citești trei scene din ea: Iacov binecuvântându-i pe fiii lui Iosif (Geneza 48), Rahav ascunzând iscoadele (Iosua 2) și căderea Ierihonului (Iosua 6). Eroii sunt neașteptați: un bătrân care nu mai vedea și o femeie din Ierihon."},{"t":"context","label":"Înainte","ref":"Evrei 11:20-31","text":"Lista a început cu Abel, Enoh, Noe și Avraam. Acum trece la Isaac, Iacov și Iosif, apoi la Moise, la ieșirea din Egipt și la intrarea în Canaan."},{"t":"context","label":"Unde","ref":"Geneza 48","text":"În Egipt, în ținutul Gosen, în estul deltei Nilului. Iacov locuia acolo de aproape 17 ani și avea să moară la 147 de ani (Geneza 47:27–28)."},{"t":"context","label":"Înainte","ref":"Geneza 48","text":"Simțind că i se apropie moartea, Iacov l-a pus pe Iosif să jure că nu-l va îngropa în Egipt, ci în mormântul părinților lui: peștera Macpela din Geneza 23 (Geneza 47:29–31; 49:29–30)."},{"t":"context","label":"Când","ref":"Iosua 2","text":"După cei 40 de ani prin pustie și după moartea lui Moise. Poporul e tăbărât la Sitim, la est de Iordan, în fața Ierihonului. Data exactă e discutată: unii o pun pe la 1400 î.Hr., alții pe la 1200 î.Hr."},{"t":"context","label":"Unde","ref":"Iosua 2","text":"Ierihonul era o oază cu un izvor bogat, lângă Iordan, la vreo 250 m sub nivelul mării. E unul dintre cele mai vechi orașe cunoscute: oamenii locuiau acolo cu mii de ani înainte de Iosua."},{"t":"context","label":"Înainte","ref":"Iosua 6","text":"În capitolele 3–5, poporul trece Iordanul pe uscat, ține Paștele la Ghilgal, iar mana încetează. Lângă Ierihon, lui Iosua i se arată „Căpetenia oștirii Domnului” (Iosua 5:14)."},{"t":"fact","ref":"Evrei 11:21","num":"","title":"Pat sau toiag? Aceleași litere","text":"Evrei citează aici traducerea greacă: „rezemat pe vârful toiagului său”. În Geneza 47:31, textul ebraic vorbește de „căpătâiul patului”. În ebraică, „pat” și „toiag” se scriu cu aceleași consoane, iar vocalele nu se scriau."},{"t":"fact","ref":"Geneza 48:14","num":"","title":"Din nou, cel mic trece înainte","text":"Mâna dreaptă însemna binecuvântarea mai mare. Iacov, care îi luase cândva binecuvântarea fratelui mai mare, Esau, își încrucișează acum mâinile „înadins”. Geneza repetă tiparul: Abel și nu Cain, Isaac și nu Ismael, Iacov și nu Esau."},{"t":"fact","ref":"Geneza 48:20","num":"","title":"Binecuvântarea se rostește și azi","text":"În multe familii evreiești, părinții își binecuvântează băieții vineri seara, la începutul Sabatului, cu cuvintele din v. 20: „Dumnezeu să Se poarte cu tine cum S-a purtat cu Efraim și cu Manase”."},{"t":"fact","ref":"Iosua 2:6","num":"","title":"Inul de pe acoperiș trădează anotimpul","text":"Inul se recolta primăvara, iar tulpinile se uscau apoi la soare. Se potrivește cu restul povestirii: Iordanul era revărsat „în tot timpul secerișului” (Iosua 3:15), iar Paștele vine la câteva zile după trecere (Iosua 5:10)."},{"t":"fact","ref":"Evrei 11:31","num":"","title":"O străină în arborele lui Isus","text":"Matei 1:5 o trece pe Rahav în genealogia lui Isus: „Salmon a născut pe Boaz, din Rahav”, iar Boaz e străbunicul regelui David. În Evrei 11, ea e una din doar două femei numite, alături de Sara."},{"t":"fact","ref":"Iosua 6:20","num":"","title":"Ierihonul și arheologii: dezbatere deschisă","text":"Pe dealul Tell es-Sultan s-au găsit ziduri prăbușite și un strat gros de incendiu. Datarea lor e însă disputată: Kathleen Kenyon le punea pe la 1550 î.Hr., înainte de orice dată propusă pentru Iosua, alții le leagă de cucerire."},{"t":"fact","ref":"Iosua 6:26","num":"","title":"Un blestem cu împlinire târzie","text":"Secole mai târziu, pe vremea regelui Ahab, Hiel din Betel a zidit iarăși Ierihonul. Biblia notează că i-a pus temeliile „cu prețul lui Abiram, întâiul lui născut”, și porțile cu prețul lui Segub, mezinul (1 Împărați 16:34)."},{"t":"term","word":"o depărtare bunicică","orig":"kivrat-ʾereṣ","text":"O expresie veche și simpatică pentru „o bucată bună de drum”. Măsura ebraică exactă nu se mai cunoaște. După tradiție, mormântul Rahelei e la intrarea în Betleem, unde e vizitat și azi."},{"t":"term","word":"iscoadele","orig":"","text":"Cuvânt vechi pentru spioni. Cu aproape 40 de ani înainte, Moise trimisese 12 iscoade, iar 10 au speriat poporul (Numeri 13–14); Iosua fusese unul din cei doi curajoși. Acum trimite el doar doi, „în ascuns” (v. 1)."},{"t":"term","word":"curva","orig":"zônâ","text":"Ebraica spune clar „prostituată”, iar Evrei 11:31 și Iacov 2:25 folosesc grecescul „pornē”. Unii interpreți vechi, ca istoricul Iosif Flavius, au prezentat-o mai degrabă ca hangiță. Casa ei era probabil locul unde străinii puteau intra fără să bată la ochi."},{"t":"term","word":"funia","orig":"tiqwâ","text":"Cuvântul ebraic de aici, „tikvah”, înseamnă în restul Bibliei „speranță”. Firul cârmâziu era roșu aprins, vopsit de obicei cu un colorant scos din niște insecte mici (kermes), nume înrudit cu românescul „cârmâz”."},{"t":"term","word":"trâmbițe de corn de berbec","orig":"šôpār","text":"Nu trompete de metal, ci coarne de berbec scobite, cu un sunet aspru și puternic. Se suflă și azi în sinagogi, de Anul Nou evreiesc (Roș Hașana)."},{"t":"term","word":"chivotul legământului","orig":"ʾărôn habbərît","text":"O ladă de lemn de salcâm poleită cu aur, lungă de vreo 1,1 m, purtată pe umeri cu drugi (Exodul 25:10–14). Cornilescu numește tot „chivot” și corabia lui Noe (Evrei 11:7), deși în ebraică sunt cuvinte diferite."},{"t":"today","then":"Binecuvântarea unui tată pe patul de moarte era ca un testament: cuvinte rostite o singură dată, cu mâinile pe capul copiilor, care nu se mai luau înapoi.","now":"Ca un testament făcut la notar, doar că aici nu se împart bani sau apartamente, ci viitorul unor familii întregi."},{"t":"today","then":"Seara, poarta cetății se închidea (Iosua 2:5, 7). Cine rămânea afară, rămânea afară până dimineața.","now":"Ca la căminul studențesc care se încuie la o anumită oră: după aceea, fără cheie nu mai intri."},{"t":"watch","text":"În Evrei 11:20–22, Isaac, Iacov și Iosif au ceva în comun: toți fac un gest de credință aproape de moarte. La ce privesc ei, la prezent sau la viitor?"},{"t":"watch","text":"Compară ce le spune Rahav iscoadelor în Iosua 2:9 cu raportul lor către Iosua din v. 24. De unde le vin cuvintele?"},{"t":"watch","text":"În Iosua 6, numără de câte ori apare cifra șapte: preoți, trâmbițe, zile, ocoluri. Și observă tăcerea cerută în v. 10."},{"t":"question","text":"Rahav a riscat totul doar pe ce auzise despre Dumnezeu. Tu ce pas ai face azi pe baza a ce știi despre El?"}],"290":[{"t":"passage","title":"Debora cântă, Ghedeon sparge urcioarele","refs":[{"label":"Evrei 11:32-33","book":"HEB","ch":11,"v":"32-33"},{"label":"Judecătorii 5","book":"JDG","ch":5,"v":""},{"label":"Judecătorii 6","book":"JDG","ch":6,"v":""},{"label":"Judecătorii 7","book":"JDG","ch":7,"v":""},{"label":"Judecătorii 8","book":"JDG","ch":8,"v":""}]},{"t":"thread","text":"Evrei 11:32 îi numește pe Ghedeon și Barac printre oamenii credinței, iar azi le citești povestea. Judecătorii nu-i arată ca pe niște supereroi: Ghedeon se ascunde, se îndoiește și cere semne. Totuși Dumnezeu lucrează prin ei, ca să fie limpede cine aduce biruința (7:2)."},{"t":"context","label":"Înainte","ref":"Evrei 11:32–33","text":"Autorul, al cărui nume nu-l știm, a trecut prin eroii credinței de la Abel la Rahav (v. 4–31). Acum se grăbește, căci „nu mi-ar ajunge vremea”, și doar înșiră nume."},{"t":"context","label":"Când","ref":"Judecătorii 5–8","text":"Între moartea lui Iosua și primul împărat, Saul. Datarea exactă e discutată; mulți istorici o așază în secolele XII–XI î.Hr. Israel era o ligă de seminții, fără capitală, fără împărat și fără armată permanentă."},{"t":"context","label":"Înainte","ref":"Judecătorii 5–8","text":"Capitolul 4 povestește în proză ce cântă capitolul 5: Debora și Barac înfrâng carele lui Sisera, iar Iael îl ucide în cortul ei. Urmează 40 de ani de liniște (5:31), apoi vin madianiții."},{"t":"fact","ref":"Evrei 11:32","num":"","title":"Ordinea numelor e întoarsă","text":"În Judecătorii, Barac vine înaintea lui Ghedeon, iar Iefta înaintea lui Samson. Evrei îi înșiră invers, pe perechi. Nu știm sigur de ce; poate autorul îi pune întâi pe cei mai cunoscuți."},{"t":"fact","ref":"Judecătorii 5:1","num":"","title":"Una dintre cele mai vechi poezii","text":"Mulți cercetători socotesc Cântarea Deborei printre cele mai vechi texte din Biblie, după ebraica ei arhaică. E cântată „în ziua aceea” (v. 1), ca un reportaj în versuri de pe câmpul de luptă."},{"t":"fact","ref":"Judecătorii 5:21","num":"900 de care","title":"Un pârâu care a oprit carele","text":"Mare parte din an, Chisonul e un pârâu mic, dar la ploi mari se umflă repede și câmpia se face mlaștină. Cântarea pomenește ploaia (v. 4) și pârâul care „i-a luat” (v. 21); mulți cred că cele 900 de care (4:3) s-au împotmolit."},{"t":"fact","ref":"Judecătorii 6:11","num":"","title":"Treierat ascuns într-un teasc","text":"Grâul se treiera de obicei pe o arie deschisă, bătută de vânt, ca să zboare pleava. Ghedeon lucrează într-un teasc de struguri, o groapă săpată în stâncă: incomod, dar ascuns de ochii madianiților."},{"t":"fact","ref":"Judecătorii 7:19","num":"3 străji","title":"Atac la schimbul de gardă","text":"Evreii împărțeau noaptea în trei străji. Straja de la mijloc începea cam pe la 10 seara, iar Ghedeon lovește „îndată după ce puseseră pe păzitori”: santinelele noi abia își luaseră locul, în întuneric."},{"t":"fact","ref":"Judecătorii 7:22","num":"","title":"Isaia își amintește de Madian","text":"Câteva secole mai târziu, Isaia vestește o izbăvire „ca în ziua lui Madian” (Isaia 9:4). Două versete mai jos urmează: „un Copil ni S-a născut, un Fiu ni s-a dat” (Isaia 9:6)."},{"t":"fact","ref":"Judecătorii 8:26","num":"≈ 19 kg","title":"Kilograme de aur pe o manta","text":"Un siclu cântărea cam 11 grame, deci 1.700 de sicli înseamnă în jur de 19 kilograme de aur, numai din verigile de nas. Din ele Ghedeon face un efod, care ajunge „o cursă” pentru el și casa lui (v. 27)."},{"t":"term","word":"gherghef","orig":"","text":"Rama de lemn pe care se întinde pânza ca s-o brodezi. Hainele vopsite și brodate erau o pradă de preț: mama lui Sisera visează la ele, fără să știe că fiul ei e mort (v. 28–30)."},{"t":"term","word":"arie","orig":"góren","text":"Un loc neted și bătătorit, de obicei pe o înălțime bătută de vânt, unde se treiera și se vântura grâul. Acolo pune Ghedeon lâna, sub cerul liber (6:37)."},{"t":"term","word":"trâmbițe","orig":"șofár","text":"Nu trâmbițe de metal, ci coarne de berbec scobite, cu sunet puternic și aspru, folosite ca semnal de luptă. Evreii sună și azi din șofar, la sărbători."},{"t":"term","word":"urcioare","orig":"kad","text":"Vase obișnuite de lut, ca cele cu care se căra apa. Făclia ardea ascunsă înăuntru; când urciorul se spărgea, lumina apărea dintr-odată, cu zgomot de cioburi, de jur împrejurul taberei."},{"t":"term","word":"lunișoarele","orig":"saharoním","text":"Podoabe în formă de semilună, atârnate la gâtul cămilelor. Unii cred că erau și amulete, legate de cinstirea lunii la popoarele din deșert."},{"t":"term","word":"efod","orig":"efód","text":"La marele preot, efodul era o haină scurtă, ca un șorț țesut cu fir de aur (Exodul 28). Nu știm cum arăta efodul lui Ghedeon, dar a ajuns obiect de închinare idolească (v. 27)."},{"t":"term","word":"Abimelec","orig":"Avimélekh","text":"În ebraică, numele înseamnă „tatăl meu e împărat”. Ciudat pentru fiul omului care tocmai spusese: „Eu nu voi domni peste voi” (v. 23)."},{"t":"today","then":"Madianiții veneau după semănat și nimiceau roadele, șapte ani la rând. Oamenii se ascundeau prin peșteri (6:1–5).","now":"Gândește-te la o familie de la țară care muncește pământul toată primăvara, iar la recoltă vine cineva și golește hambarul. An de an."},{"t":"today","then":"Ghedeon cere un semn cu lâna, apoi încă unul, pe dos (6:36–40).","now":"Mulți facem la fel înaintea unei decizii mari, ca admiterea la facultate sau o mutare: „Doamne, dă-mi un semn.” Biblia nu ascunde că și un erou al credinței a avut nevoie de asta."},{"t":"today","then":"Efraimiții se supără că n-au fost chemați la luptă (8:1).","now":"Ca prietenul supărat că n-a fost inclus în plan sau pe grupul de WhatsApp. Ghedeon nu se apără, ci îi laudă pe ei (8:2–3), și cearta se stinge."},{"t":"watch","text":"Ce seminții vin la luptă și care rămân acasă, în cântarea Deborei (5:14–18). Ascultă întrebările „Pentru ce...?”."},{"t":"watch","text":"Unde își face Ghedeon treaba când vine Îngerul (6:11) și cum îl numește Îngerul (6:12)."},{"t":"watch","text":"Ce spune Ghedeon despre domnie (8:23) și ce cere imediat după aceea (8:24–27)."},{"t":"question","text":"În ce lucru te simți „cel mai mic”, ca Ghedeon (6:15), și ce ai face dacă ai crede cu adevărat că Dumnezeu e cu tine?"}],"291":[{"t":"passage","title":"Iefta, Șibolet și nașterea lui Samson","refs":[{"label":"Evrei 11:32-34","book":"HEB","ch":11,"v":"32-34"},{"label":"Judecătorii 11","book":"JDG","ch":11,"v":""},{"label":"Judecătorii 12","book":"JDG","ch":12,"v":""},{"label":"Judecătorii 13","book":"JDG","ch":13,"v":""}]},{"t":"thread","text":"Evrei 11:32 îi numește pe Iefta și pe Samson, iar azi îi întâlnești pe amândoi. Iefta e fiul alungat de frați, Samson e copilul promis unei femei sterpe. Dumnezeu își alege izbăvitori din locuri la care nimeni nu se uita."},{"t":"context","label":"Cine","ref":"Evrei 11:32–34","text":"Iefta și Samson sunt doi dintre cei patru judecători numiți aici, alături de Ghedeon și Barac. Versetul 34 spune că „au fost viteji în războaie”; tot așa începe povestea lui Iefta: „era un om viteaz” (Judecătorii 11:1)."},{"t":"context","label":"Înainte","ref":"Judecătorii 11–13","text":"După Ghedeon, fiul lui, Abimelec, își ucide frații și domnește trei ani (cap. 9). Israel slujește iar idolilor, iar amoniții îi apasă 18 ani pe cei din Galaad (10:6–8). Bătrânii caută un conducător (10:18)."},{"t":"context","label":"Unde","ref":"Judecătorii 11–13","text":"Iefta e din Galaad, la est de Iordan, în Iordania de azi; țara cerută de amoniți e între râurile Arnon și Iaboc (11:13). Samson se naște la Țorea, în dealurile de la vest de Ierusalim, aproape de filisteni."},{"t":"fact","ref":"Judecătorii 11:15","num":"","title":"Diplomație înainte de sabie","text":"Înainte să lupte, Iefta trimite soli de două ori (v. 12–14). Răspunsul lui e o lecție de istorie, ca în Numeri 20–21: Israel a ocolit Edomul și Moabul, iar pe Sihon l-a învins abia după ce acesta l-a atacat."},{"t":"fact","ref":"Judecătorii 11:24","num":"1868","title":"Un zeu scris pe piatră","text":"Chemoș, zeul moabiților, apare de mai multe ori pe Stela lui Meșa, o piatră scrisă în secolul IX î.Hr., găsită în Iordania în 1868 și păstrată azi la Luvru. Ciudat: Iefta vorbește cu amoniții, al căror zeu era Milcom."},{"t":"fact","ref":"Judecătorii 11:31","num":"","title":"O juruință citită în două feluri","text":"Interpretările diferă. Mulți, încă din vechime, au înțeles o jertfă reală; alții cred că fata a fost închinată Domnului și a rămas necăsătorită toată viața. Textul subliniază de două ori fecioria ei (v. 37, 39)."},{"t":"fact","ref":"Judecătorii 12:6","num":"","title":"Un accent care te dădea de gol","text":"Șibbolet înseamnă în ebraică „spic” sau „șuvoi de apă”. Efraimiții spuneau „Sibolet”. De aici, în engleză, „shibboleth” a ajuns să însemne un cuvânt sau un obicei după care îți dai seama din ce grup e cineva."},{"t":"fact","ref":"Judecătorii 12:14","num":"70 de mânji","title":"Măgarul, semn de rang","text":"Să călărești pe măgar era semn de vază: Abdon are 70 de urmași călare pe mânji, ca Iair cu cei 30 de fii (10:4). Peste secole, Isus intră în Ierusalim tot pe un mânz de măgar, ca împărat."},{"t":"fact","ref":"Judecătorii 13:18","num":"","title":"Un nume pe care nu-l spune","text":"Cuvântul ebraic tradus „Minunat” are aceeași rădăcină cu „Minunat” din Isaia 9:6, profeția despre Copilul care ni S-a născut. Mulți creștini văd în Îngerul Domnului o arătare a lui Hristos, înainte să Se nască din Maria."},{"t":"term","word":"fără căpătâi","orig":"anashím reqím","text":"În ebraică, „oameni goi”: fără pământ, fără bani, fără loc în societate. Unde Cornilescu scrie „făceau plimbări cu el”, textul ebraic spune doar că „ieșeau” cu el, probabil în expediții de pradă."},{"t":"term","word":"juruință","orig":"néder","text":"O promisiune solemnă făcută lui Dumnezeu, adesea cu o condiție: dacă El face ceva, omul Îi dăruiește ceva. Legea cerea ca juruințele să fie împlinite (Numeri 30), dar interzicea jertfele de oameni (Deuteronomul 12:31)."},{"t":"term","word":"ardere-de-tot","orig":"olá","text":"Jertfa arsă întreagă pe altar, din care nu rămânea nimic de mâncat. În ebraică, „olá” înseamnă „ce se suie”, ca fumul spre cer. În 13:20, chiar Îngerul „S-a suit” în flacăra altarului."},{"t":"term","word":"timpane","orig":"tof","text":"Tobe mici și rotunde, ținute într-o mână și bătute cu cealaltă. Femeile ieșeau cu ele în fața biruitorilor, cum a făcut Maria, sora lui Moise, după trecerea Mării Roșii (Exodul 15:20)."},{"t":"term","word":"vadurile","orig":"","text":"Locurile unde Iordanul poate fi trecut cu piciorul, pe unde apa e mică. Cine le păzea le tăia fugarilor drumul spre casă."},{"t":"term","word":"închinat lui Dumnezeu","orig":"nezír Elohím","text":"În ebraică, „nazireu al lui Dumnezeu”. Nazireul nu bea vin, nu se tundea și nu se atingea de morți (Numeri 6), de obicei pentru o vreme. Samson e nazireu de dinainte de naștere, „până în ziua morții lui” (v. 7)."},{"t":"today","then":"Iefta e alungat de frați, dar când vine războiul, bătrânii îl caută tocmai pe el (11:1–7).","now":"Ca atunci când ești lăsat pe dinafară în grup, dar toți te sună când e nevoie de cineva care să se descurce. Iefta le-o spune direct: „Pentru ce veniți la mine acum?”"},{"t":"today","then":"La vadurile Iordanului, felul în care rosteai un cuvânt te putea costa viața (12:5–6).","now":"La noi îți dai seama după accent dacă cineva e din Moldova, din Ardeal sau din Oltenia, și glumim pe tema asta. Acolo, accentul a ajuns o chestiune de viață și de moarte."},{"t":"today","then":"Manoah se roagă să mai vină omul lui Dumnezeu, ca să-i învețe cum să crească copilul (13:8).","now":"Părinții de azi citesc cărți și caută sfaturi online despre creșterea copiilor. Manoah cere sfat direct de la Dumnezeu, înainte ca fiul lui să se nască."},{"t":"watch","text":"Ce spune Iefta când își vede fata (11:35) și ce îi răspunde ea (11:36)."},{"t":"watch","text":"Efraim se plânge iar că n-a fost chemat (12:1), ca în vremea lui Ghedeon (8:1). Compară cum răspund cei doi conducători și cum se termină."},{"t":"watch","text":"Cine judecă mai limpede în capitolul 13, Manoah sau nevasta lui? Citește atent versetele 22–23."},{"t":"question","text":"Ce promisiune I-ai făcut lui Dumnezeu în grabă, într-un moment greu, și ce ai făcut apoi cu ea?"}],"292":[{"t":"passage","title":"Samson, eroul care nu-și stăpânea inima","refs":[{"label":"Evrei 11:32-34","book":"HEB","ch":11,"v":"32-34"},{"label":"Judecătorii 14","book":"JDG","ch":14,"v":""},{"label":"Judecătorii 15","book":"JDG","ch":15,"v":""},{"label":"Judecătorii 16","book":"JDG","ch":16,"v":""}]},{"t":"thread","text":"Evrei 11 îl pune pe Samson în lista eroilor credinței. Judecătorii 14–16 arată de ce asta te surprinde: e impulsiv, răzbunător și se joacă cu darul lui. Dar la final strigă la Dumnezeu din slăbiciune, și Dumnezeu îi răspunde."},{"t":"context","label":"Cine","ref":"Evrei 11:32–34","text":"Autorul scrisorii nu-și spune numele. Scrie unor creștini, probabil evrei, care se gândeau să renunțe, și le face o listă cu oameni care au mers înainte prin credință."},{"t":"context","label":"Înainte","ref":"Evrei 11:32–34","text":"Capitolul 11 trece prin istoria lui Israel, de la Abel până la Rahav (v. 31). La versetul 32, autorul se oprește, pentru că „nu mi-ar ajunge vremea”, și doar înșiră nume."},{"t":"context","label":"Când","ref":"Judecătorii 14–16","text":"În vremea judecătorilor, înainte ca Israel să aibă împărat, probabil prin secolele XII–XI î.Hr. Dumnezeu îi dăduse pe israeliți în mâinile filistenilor pentru patruzeci de ani (13:1)."},{"t":"context","label":"Unde","ref":"Judecătorii 14–16","text":"Samson era din Țorea, din seminția lui Dan, pe dealurile de deasupra văii Sorec. De acolo coboară mereu spre ținutul filistenilor: Timna, apoi Ascalon și Gaza, pe malul mării."},{"t":"context","label":"Înainte","ref":"Judecătorii 14–16","text":"În capitolul 13, un înger le vestește părinților lui că vor avea un fiu „închinat lui Dumnezeu din pântecele mamei lui”. Briciul nu trebuia să-i atingă niciodată capul."},{"t":"fact","ref":"Evrei 11:34","num":"","title":"Întăriți din slăbiciune","text":"Cornilescu are „s-au vindecat de boli”, dar cuvântul grecesc înseamnă și boală, și slăbiciune. Literal: „au fost întăriți din slăbiciune”. Ține minte expresia când ajungi la Samson orb și la ultima lui rugăciune (Judecătorii 16:28)."},{"t":"fact","ref":"Judecătorii 14:3","num":"2019","title":"Filistenii veniseră de peste mare","text":"Spre deosebire de Israel, filistenii nu se tăiau împrejur: veniseră din lumea Mării Egee, pe la 1200–1150 î.Hr. Un studiu ADN din 2019, pe oseminte de la Ascalon, arată că o parte din strămoșii lor erau din sudul Europei."},{"t":"fact","ref":"Judecătorii 15:4","num":"300","title":"Vulpi sau, mai degrabă, șacali?","text":"Cuvântul ebraic de aici înseamnă și vulpe, și șacal. Mulți cercetători cred că erau șacali, care trăiesc în haite și se prind mai ușor în număr mare. Oricum, 150 de perechi legate coadă de coadă cer multă muncă."},{"t":"fact","ref":"Judecătorii 15:16","num":"","title":"Un joc de cuvinte cu măgarul","text":"În ebraică, „măgar” și „grămadă” sună la fel: ḥamor. Strigătul lui Samson e o mică poezie de victorie, cu un joc de cuvinte greu de tradus: „Cu o falcă de măgar, o grămadă, două grămezi”."},{"t":"fact","ref":"Judecătorii 16:3","num":"≈ 60 km","title":"Porțile Gazei, cărate spre munte","text":"Hebronul e la vreo 60 km de Gaza și cu aproape un kilometru mai sus. Unii înțeleg că Samson a cărat porțile tot drumul; alții, că a urcat pe un deal de lângă Gaza, cu fața spre Hebron."},{"t":"fact","ref":"Judecătorii 16:5","num":"1.100 sicli","title":"Prețul lui Samson: leafa pe 110 ani","text":"Fiecare domnitor promite 1.100 de sicli, peste 12 kg de argint. În capitolul următor, un levit e tocmit cu zece sicli pe an (17:10). Și tot 1.100 de sicli îi luase Mica mamei lui (17:2)."},{"t":"fact","ref":"Judecătorii 16:29","num":"","title":"Un templu sprijinit pe doi stâlpi","text":"La Tell Qasile, azi în Tel Aviv, arheologii au dezgropat un templu filistean. Acoperișul lui se sprijinea pe doi stâlpi centrali de lemn, așezați pe baze de piatră. Te ajută să-ți închipui scena de la final."},{"t":"term","word":"ghicitoare","orig":"ḥîdāh","text":"Ghicitorile și întrecerile de istețime erau o distracție la ospețe, mai ales cu un pariu pe masă. Același cuvânt ebraic e folosit pentru întrebările grele cu care regina din Seba l-a încercat pe Solomon (1 Împărați 10:1)."},{"t":"term","word":"juncana","orig":"ʻeglāh","text":"O vacă tânără, bună de pus la jug. Samson le spune, cu amărăciune, că au aflat răspunsul prin nevasta lui, ca unul care ară cu vaca altuia."},{"t":"term","word":"închinat Domnului","orig":"nəzîr","text":"În ebraică, nazir: un om pus deoparte pentru Dumnezeu. Nu bea vin, nu se tunde și nu se apropie de un mort (Numeri 6). Samson era așa „din pântecele maicii” lui, nu prin alegerea lui."},{"t":"term","word":"sicli","orig":"šeqel","text":"Siclul nu era o monedă, ci o greutate, de vreo 11 grame: argintul se cântărea. Monedele aveau să apară abia câteva secole mai târziu."},{"t":"term","word":"râșniță","orig":"","text":"Pe vremea aceea era de obicei din două pietre: una mare, jos, și una mai mică, frecată pe ea cu mâinile. Era munca zilnică a sclavilor și a femeilor. Eroul ajunge să facă cea mai umilă muncă."},{"t":"term","word":"Dagon","orig":"","text":"Un zeu important al filistenilor. Multă vreme s-a crezut că era un zeu-pește, pentru că „dag” înseamnă „pește” în ebraică. Azi mulți cercetători îl leagă de Dagan, zeu venerat în Siria cu mult înainte, probabil legat de grâne."},{"t":"today","then":"Nunta ținea șapte zile, cu ospăț și distracții, iar mirele avea lângă el treizeci de tovarăși (14:11–12).","now":"La noi, nunta ține o noapte, până dimineața. Închipuie-ți o săptămână întreagă cu treizeci de colegi de masă pe care nu i-ai ales tu."},{"t":"today","then":"Gaza și Ascalonul erau două dintre cele cinci orașe mari ale filistenilor, pe țărmul mării.","now":"Și azi există un oraș cu numele Gaza, în același loc. Ascalonul de atunci e Așkelonul de azi, la vreo 20 km mai la nord."},{"t":"watch","text":"Numără de câte ori „Duhul Domnului a venit peste” Samson (14:6, 14:19, 15:14). Apoi citește încet 16:20: „Nu știa că Domnul Se depărtase de el.”"},{"t":"watch","text":"Textul îl arată pe Samson rugându-se doar de două ori: când îi e sete (15:18) și la sfârșit (16:28). Ce cere de fiecare dată?"},{"t":"watch","text":"Fii atent la cifra șapte: șapte zile de ospăț (14:12), șapte funii (16:7), șapte șuvițe de păr (16:13)."},{"t":"question","text":"În ce parte a vieții te bazezi atât de mult pe puterea ta, încât n-ai observa dacă Dumnezeu nu mai e acolo?"}],"293":[{"t":"passage","title":"De la rugăciunea Anei la temnița lui Ieremia","refs":[{"label":"Evrei 11:32-40","book":"HEB","ch":11,"v":"32-40"},{"label":"1 Samuel 1","book":"1SA","ch":1,"v":""},{"label":"2 Samuel 8","book":"2SA","ch":8,"v":""},{"label":"Ieremia 37","book":"JER","ch":37,"v":""}]},{"t":"thread","text":"Evrei 11:32 îi pomenește pe David, pe Samuel și pe proroci. Azi îi vezi pe rând: Samuel se naște din lacrimile Anei, David cucerește împărății (v. 33), iar Ieremia ajunge bătut și închis (v. 36). Credința arată când a biruință, când a suferință."},{"t":"context","label":"Înainte","ref":"Evrei 11:32–40","text":"Ieri ai citit începutul acestei liste, cu Samson. Azi ea merge mai departe, de la biruințe la suferințe, și se încheie cu o surpriză: „ceva mai bun pentru noi” (v. 40)."},{"t":"context","label":"Unde","ref":"1 Samuel 1","text":"Familia lui Elcana locuia la Rama, în muntele lui Efraim. În fiecare an urcau la Silo, la vreo 30 km nord de Ierusalim, unde stătea atunci chivotul legământului."},{"t":"context","label":"Când","ref":"1 Samuel 1","text":"Spre sfârșitul vremii judecătorilor, probabil în secolul al XI-lea î.Hr. Mulți comentatori cred că Eli și Samson au trăit cam în aceeași perioadă, amândoi sub apăsarea filistenilor."},{"t":"context","label":"Când","ref":"2 Samuel 8","text":"În anii de vârf ai domniei lui David (aprox. 1010–970 î.Hr.). Înainte, Ierusalimul devenise capitala lui (cap. 5), iar Dumnezeu îi promisese o casă, adică o dinastie, pentru totdeauna (cap. 7)."},{"t":"context","label":"Când","ref":"Ieremia 37","text":"Pe la 588 î.Hr., cu puțin înainte de căderea Ierusalimului. Babilonienii („haldeenii”) asediau cetatea, dar s-au retras o vreme când a venit o armată egipteană, probabil a faraonului Hofra (Ieremia 44:30)."},{"t":"context","label":"Cine","ref":"Ieremia 37","text":"Zedechia, ultimul împărat al lui Iuda, pus pe tron de Nebucadnețar. Ieremia spunea de ani de zile că Babilonul va cuceri cetatea, de aceea mulți îl socoteau trădător (v. 13)."},{"t":"fact","ref":"Evrei 11:37","num":"","title":"Un proroc tăiat cu fierăstrăul?","text":"După o tradiție iudaică veche, prorocul Isaia a fost omorât așa, pe vremea împăratului Manase. Mulți cred că la el se gândește autorul când scrie „tăiați în două cu fierăstrăul”."},{"t":"fact","ref":"1 Samuel 1:13","num":"","title":"Ana, model de rugăciune pentru rabini","text":"Pe atunci oamenii se rugau de obicei cu glas tare, de aceea Eli crede că e beată. Mai târziu, rabinii au luat-o pe Ana drept model pentru rugăciunea în șoaptă, cu buzele mișcându-se (Talmudul, Berachot 31a)."},{"t":"fact","ref":"1 Samuel 1:24","num":"≈ 3 ani","title":"Câți ani avea micul Samuel?","text":"Copiii erau înțărcați mult mai târziu decât azi. Într-o carte iudaică veche, o mamă spune că și-a alăptat fiul trei ani (2 Macabei 7:27). Samuel avea probabil doi-trei ani când a rămas la Silo."},{"t":"fact","ref":"1 Samuel 1:3","num":"","title":"Silo, un avertisment peste secole","text":"Mai târziu, Silo a fost distrus, probabil de filisteni. După mai bine de patru sute de ani, Ieremia le va spune celor din Ierusalim să meargă la Silo și să vadă ce a făcut Dumnezeu acolo (Ieremia 7:12)."},{"t":"fact","ref":"2 Samuel 8:2","num":"","title":"Străbunica lui David era moabită","text":"Rut, moabita, era străbunica lui David (Rut 4:17). Iar când fugea de Saul, David și-a lăsat părinții în grija împăratului Moabului (1 Samuel 22:3–4). Purtarea aspră de aici e cu atât mai surprinzătoare."},{"t":"fact","ref":"Ieremia 37:3","num":"2005","title":"Sigiliul lui Iucal, scos din pământ","text":"În 2005, în Orașul lui David din Ierusalim, arheologa Eilat Mazar a găsit o bulă: o bucățică de lut cu amprenta unui sigiliu. Pe ea scrie numele lui Iucal, fiul lui Șelemia, probabil chiar omul trimis de Zedechia."},{"t":"fact","ref":"Ieremia 37:5","num":"1935","title":"Scrisori din timpul asediului","text":"În 1935, la Lachis, s-au găsit cioburi de lut cu scrisori ale unor ofițeri evrei, din anii invaziei babiloniene. Una spune că o căpetenie a oștirii a coborât în Egipt, poate după ajutorul de care vorbește v. 5."},{"t":"term","word":"cojoace","orig":"mēlōtḗ","text":"Haine din piele de oaie, cu lâna pe ele. Același cuvânt grecesc e folosit în traducerea greacă a Vechiului Testament pentru mantaua lui Ilie (1 Împărați 19:19)."},{"t":"term","word":"Domnului oștirilor","orig":"YHWH Ṣəbāʼôt","text":"Aici apare pentru prima dată în Biblie acest nume al lui Dumnezeu. „Oștirile” sunt probabil armatele cerului: îngerii și stelele. Ana e primul om din Biblie care I se adresează așa în rugăciune (v. 11)."},{"t":"term","word":"efă","orig":"ʼêfāh","text":"Măsură pentru grâne și făină, cam 22 de litri, după cele mai multe estimări. Alături de trei tauri și un burduf cu vin, darul Anei era foarte generos."},{"t":"term","word":"logofăt","orig":"sôfēr","text":"Cornilescu împrumută un titlu de la vechile curți domnești românești. În ebraică e sofer: scribul, secretarul regelui, care scria și păstra actele. În Ieremia 37:15, casa unui logofăt e prefăcută în temniță."},{"t":"term","word":"cheretiților și a peletiților","orig":"","text":"Garda personală a lui David, formată din străini. Cheretiții erau probabil cretani, iar peletiții, poate filisteni: oameni din neamul cu care se luptase Samson."},{"t":"term","word":"gherlă","orig":"ḥănuyôt","text":"Un cuvânt popular pentru închisoare, venit de la orașul Gherla din Transilvania, cu penitenciarul lui vestit. În ebraică e vorba de niște încăperi boltite, probabil sub pământ."},{"t":"today","then":"La ospățul de la Silo, an de an, Penina o înțepa pe Ana pentru că nu avea copii (v. 6–7). Pentru o femeie de atunci era o mare rușine.","now":"Seamănă cu mesele de sărbători în familie, când cineva întreabă iar: „Și voi, când faceți un copil?” Doar că Ana auzea asta în fiecare an."},{"t":"today","then":"Meseriașii de același fel stăteau pe aceeași stradă. Ieremia primea zilnic o pâine din „ulița brutarilor” (v. 21), cât timp a mai fost pâine în cetate.","now":"Așa și-au primit numele și străzi din centrul vechi al Bucureștiului: Lipscani, Șelari, Covaci, după negustorii și meșteșugarii care lucrau acolo."},{"t":"watch","text":"Ana e stearpă, ca mama lui Samson (Judecătorii 13:2), și promite despre fiul ei că „brici nu va trece peste capul lui” (v. 11). Ieri ai văzut ce s-a ales de un alt copil închinat așa."},{"t":"watch","text":"Refrenul din 2 Samuel 8:6 și 8:14: „Domnul ocrotea pe David”. Cine primește meritul pentru biruințe? Uită-te și la ce face David cu aurul și argintul (v. 11)."},{"t":"watch","text":"Zedechia îl întreabă pe Ieremia în taină: „Ai vreun cuvânt din partea Domnului?” (37:17). Vrea să audă de la Dumnezeu, dar nu ascultă (v. 2)."},{"t":"question","text":"Ce durere porți de mult timp și n-ai vărsat-o încă înaintea lui Dumnezeu, cum a făcut Ana?"}]};
+
+  const BOOK_RO = {
+    GEN: "Geneza", EXO: "Exodul", LEV: "Leviticul", NUM: "Numeri", DEU: "Deuteronomul", JOS: "Iosua", JDG: "Judecătorii", RUT: "Rut",
+    "1SA": "1 Samuel", "2SA": "2 Samuel", "1KI": "1 Împăraților", "2KI": "2 Împăraților", "1CH": "1 Cronici", "2CH": "2 Cronici",
+    EZR: "Ezra", NEH: "Neemia", EST: "Estera", JOB: "Iov", PSA: "Psalmul", PRO: "Proverbele", ECC: "Eclesiastul", SNG: "Cântarea Cântărilor",
+    ISA: "Isaia", JER: "Ieremia", LAM: "Plângerile", EZK: "Ezechiel", DAN: "Daniel", HOS: "Osea", JOL: "Ioel", AMO: "Amos", OBA: "Obadia",
+    JON: "Iona", MIC: "Mica", NAM: "Naum", HAB: "Habacuc", ZEP: "Țefania", HAG: "Hagai", ZEC: "Zaharia", MAL: "Maleahi",
+    MAT: "Matei", MRK: "Marcu", LUK: "Luca", JHN: "Ioan", ACT: "Faptele Apostolilor", ROM: "Romani", "1CO": "1 Corinteni", "2CO": "2 Corinteni",
+    GAL: "Galateni", EPH: "Efeseni", PHP: "Filipeni", COL: "Coloseni", "1TH": "1 Tesaloniceni", "2TH": "2 Tesaloniceni", "1TI": "1 Timotei",
+    "2TI": "2 Timotei", TIT: "Tit", PHM: "Filimon", HEB: "Evrei", JAS: "Iacov", "1PE": "1 Petru", "2PE": "2 Petru", "1JN": "1 Ioan",
+    "2JN": "2 Ioan", "3JN": "3 Ioan", JUD: "Iuda", REV: "Apocalipsa",
+  };
+  const BOOKS = new Set(Object.keys(BOOK_RO));
+
+  const VERSIONS = [
+    { id: 191, abbr: "VDC", name: "Cornilescu 1924 (VDC)" },
+    { id: 2311, abbr: "EDCR", name: "Cornilescu revizuită 2024 (EDCR)" },
+    { id: 3914, abbr: "EDC100", name: "Cornilescu 2024 (EDC100)" },
+    { id: 126, abbr: "NTR", name: "Noua Traducere Românească (NTR)" },
+    { id: 903, abbr: "BTF2015", name: "Traducerea Fidelă 2015" },
+    { id: 1454, abbr: "BVA", name: "Biblia în Versiune Actualizată 2018" },
+  ];
+
+  // ---------- small helpers
+  const S = (v) => (v == null ? "" : String(v)).trim();
+  const norm = (s) => S(s).toLowerCase().replace(/\s+/g, " ");
+  const clampDay = (n) => Math.min(TOTAL, Math.max(1, Math.round(Number(n) || 1)));
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  const show = (id) => { $("#" + id).hidden = false; };
+  const keyOf = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  const todayKey = () => keyOf(new Date());
+  function parseKey(k) {
+    const [y, m, d] = String(k).split("-").map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+  const diffDays = (a, b) => Math.round((parseKey(b) - parseKey(a)) / DAY);
+  function addDays(k, n) { const d = parseKey(k); d.setDate(d.getDate() + n); return keyOf(d); }
+  const validKey = (k) => typeof k === "string" && /^\d{4}-\d{2}-\d{2}$/.test(k);
+
+  // ---------- storage (per viewer, best effort)
+  function loadStore() {
+    const base = { ver: 191, history: [], plan: { anchorDay: PLAN.anchorDay, anchorDate: PLAN.anchorDate } };
+    try {
+      const s = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+      if (s && typeof s === "object") {
+        base.ver = Number(s.ver) || 191;
+        if (Array.isArray(s.history)) base.history = s.history.filter((h) => h && Array.isArray(h.lines));
+        const p = s.plan;
+        if (p && typeof p === "object") {
+          if (p.anchorDay && validKey(p.anchorDate)) base.plan = { anchorDay: clampDay(p.anchorDay), anchorDate: p.anchorDate };
+          else if (p.day) base.plan = { anchorDay: clampDay(p.day), anchorDate: validKey(p.date) ? p.date : todayKey() };
+        }
+      }
+    } catch (e) {}
+    return base;
+  }
+  function saveStore() { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {} }
+  let store = loadStore();
+
+  // The plan day for a date: you read one day per calendar day, starting from your anchor.
+  const dayOnDate = (k) => clampDay(store.plan.anchorDay + diffDays(store.plan.anchorDate, k));
+  const todayDay = () => dayOnDate(todayKey());
+  const dateOfDay = (n) => addDays(store.plan.anchorDate, n - store.plan.anchorDay);
+  function whenLabel(n) {
+    const k = dateOfDay(n);
+    const d = diffDays(todayKey(), k);
+    if (d === 0) return "azi";
+    if (d === 1) return "mâine";
+    if (d === -1) return "ieri";
+    try { return new Intl.DateTimeFormat("ro-RO", { weekday: "long", day: "numeric", month: "long" }).format(parseKey(k)); } catch (e) { return k; }
+  }
+
+  // ---------- elements
+  const els = {
+    result: $("#result"), badge: $("#badge"), title: $("#ptitle"), refs: $("#prefs"), missing: $("#missing"), missingText: $("#missing-text"),
+    thread: $("#thread"), ctx: $("#ctx"), facts: $("#facts"), terms: $("#terms"), today: $("#today"), watch: $("#watch"),
+    question: $("#question"), links: $("#links"), again: $("#again"), goNote: $("#go-note"),
+    status: $("#status"), statusText: $("#status-text"), stop: $("#stop"),
+    form: $("#ask"), input: $("#ref"), goBtn: $("#go-btn"), ver: $("#ver"), recent: $("#recent"), other: $("#other"),
+    dayNum: $("#day-num"), dayOf: $("#day-of"), dayPrev: $("#day-prev"), dayNext: $("#day-next"),
+    planRefs: $("#plan-refs"), planNote: $("#plan-note"), planBtn: $("#plan-btn"),
+    planOff: $("#plan-off"), backToday: $("#back-today"), setDay: $("#set-day"),
+    dock: $("#dock"), dockBtn: $("#dock-btn"), dockLabel: $("#dock-label"), dockPrev: $("#dock-prev"), dockNext: $("#dock-next"),
+  };
+  const SECTIONS = ["s-thread", "s-context", "s-facts", "s-terms", "s-today", "s-watch", "s-q", "go"];
+  const ARROW = '<svg viewBox="4 14 92 72" aria-hidden="true"><path d="M12,50 H84 M60,24 L86,50 L60,76" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const OUT = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h8v8M13 3 3 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  try {
+    $("#today-date").textContent = new Intl.DateTimeFormat("ro-RO", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+  } catch (e) {}
+
+  // translation picker
+  for (const v of VERSIONS) {
+    const o = el("option", null, v.name);
+    o.value = String(v.id);
+    els.ver.append(o);
+  }
+  if (!VERSIONS.some((v) => v.id === store.ver)) store.ver = 191;
+  els.ver.value = String(store.ver);
+  els.ver.addEventListener("change", () => {
+    store.ver = Number(els.ver.value) || 191;
+    saveStore();
+    renderLinks();
+    updateDock();
+  });
+  const version = () => VERSIONS.find((v) => v.id === store.ver) || VERSIONS[0];
+
+  // ---------- references
+  function refFromUsfm(u) {
+    const [book, ch, v] = S(u).split(".");
+    return { book, ch: Number(ch), v: v || "", label: `${BOOK_RO[book] || book} ${ch}${v ? ":" + v : ""}` };
+  }
+  const planRefs = (n) => (PLAN.days[n - 1] || []).map(refFromUsfm);
+  // „1 Samuel 4; 1 Samuel 5; 1 Samuel 6” → „1 Samuel 4–6”
+  function groupLabels(refs) {
+    const out = [];
+    for (const r of refs) {
+      const last = out[out.length - 1];
+      if (last && !r.v && !last.v && last.book === r.book && r.ch === last.to + 1) last.to = r.ch;
+      else out.push({ book: r.book, from: r.ch, to: r.ch, v: r.v });
+    }
+    return out.map((g) => `${BOOK_RO[g.book] || g.book} ${g.from}${g.to > g.from ? "–" + g.to : ""}${g.v ? ":" + g.v : ""}`);
+  }
+  const isReflection = (n) => (PLAN.days[n - 1] || []).length === 1;
+  const planJob = (n) => ({ input: groupLabels(planRefs(n)).join("; "), planDay: n });
+
+  function cleanRef(r) {
+    if (!r || typeof r !== "object") return null;
+    const book = S(r.book).toUpperCase();
+    const ch = parseInt(r.ch, 10);
+    let v = S(r.v).replace(/[–—]/g, "-").replace(/\s+/g, "");
+    if (v && !/^\d+(-\d+)?$/.test(v)) v = "";
+    const ok = BOOKS.has(book) && ch > 0 && ch <= 150;
+    const label = S(r.label) || (ok ? `${BOOK_RO[book]} ${ch}${v ? ":" + v : ""}` : "");
+    if (!label) return null;
+    return ok ? { label, book, ch, v } : { label };
+  }
+  const linkFor = (r) => {
+    const ver = version();
+    return `https://www.bible.com/bible/${ver.id}/${r.book}.${r.ch}${r.v ? "." + r.v : ""}.${ver.abbr}`;
+  };
+  const planLink = (n) => `https://www.bible.com/ro/reading-plans/${PLAN.id}/day/${n}`;
+
+  // ---------- can this view ask Claude?
+  let sample = null;
+  let canAsk = !!(window.claude && typeof window.claude.use === "function");
+  const samplePromise = canAsk
+    ? window.claude.use("sample").then((s) => (sample = s)).catch(() => null)
+    : Promise.resolve(null);
+
+  // ---------- rendering
+  let current = { refs: [], lines: [], planDay: null };
+  let knownRefs = null;   // refs from the plan win over the ones Claude parses
+  let animate = false;
+  let currentJob = null;  // { input, planDay } of what is on screen, for „Altă variantă”
+  let errorShown = false;
+  let viewDay = todayDay();
+
+  function reset() {
+    current = { refs: [], lines: [], planDay: null };
+    for (const k of ["ctx", "facts", "terms", "today", "watch", "refs", "links"]) els[k].replaceChildren();
+    els.thread.textContent = "";
+    els.question.textContent = "";
+    els.title.textContent = "";
+    els.missing.hidden = true;
+    for (const s of SECTIONS) $("#" + s).hidden = true;
+  }
+
+  function rowLink(href, label, main) {
+    const a = el("a", "read-row" + (main ? " main" : ""));
+    a.href = href; a.target = "_blank"; a.rel = "noopener";
+    a.append(el("span", null, label));
+    a.insertAdjacentHTML("beforeend", ARROW);
+    return a;
+  }
+
+  function renderLinks() {
+    els.refs.replaceChildren();
+    els.links.replaceChildren();
+    let any = false;
+    if (current.planDay) {
+      els.links.append(rowLink(planLink(current.planDay), `Ziua ${current.planDay} în planul tău`, true));
+      any = true;
+    }
+    for (const r of current.refs) {
+      if (r.book) {
+        const chip = el("a", "ref-chip");
+        chip.href = linkFor(r); chip.target = "_blank"; chip.rel = "noopener";
+        chip.append(r.label);
+        chip.insertAdjacentHTML("beforeend", OUT);
+        els.refs.append(chip);
+        els.links.append(rowLink(linkFor(r), r.label, !current.planDay && current.refs.length === 1));
+        any = true;
+      } else {
+        els.refs.append(el("span", "ref-chip", r.label));
+      }
+    }
+    els.goNote.textContent = current.planDay
+      ? "Primul rând deschide ziua în planul tău din aplicația Biblia. Celelalte deschid fiecare pasaj."
+      : "Se deschide în aplicația Biblia, dacă o ai pe telefon, sau pe bible.com.";
+    $("#go").hidden = !any;
+  }
+
+  function updateDock() {
+    if (current.planDay) {
+      els.dockBtn.href = planLink(current.planDay);
+      els.dockLabel.textContent = "Citește ziua " + current.planDay;
+    } else if (current.refs[0] && current.refs[0].book) {
+      els.dockBtn.href = linkFor(current.refs[0]);
+      els.dockLabel.textContent = "Citește " + current.refs[0].label;
+    } else {
+      els.dock.hidden = true;
+      return;
+    }
+    els.dockPrev.disabled = viewDay <= 1;
+    els.dockNext.disabled = viewDay >= TOTAL;
+    els.dock.hidden = false;
+  }
+
+  function add(o) {
+    if (!o || typeof o !== "object") return;
+    const t = S(o.t);
+    let node = null;
+    switch (t) {
+      case "passage": {
+        const title = S(o.title);
+        if (title) els.title.textContent = title;
+        const fromClaude = Array.isArray(o.refs) ? o.refs.map(cleanRef).filter(Boolean) : [];
+        current.refs = knownRefs || fromClaude;
+        renderLinks();
+        break;
+      }
+      case "thread": {
+        const text = S(o.text);
+        if (!text) return;
+        els.thread.textContent = text;
+        node = $("#s-thread");
+        show("s-thread");
+        break;
+      }
+      case "context": {
+        const text = S(o.text);
+        if (!text) return;
+        node = el("div", "ctx-item");
+        const lab = el("div", "ctx-label");
+        lab.append(el("span", "tag jar", S(o.label) || "Context"));
+        if (S(o.ref)) lab.append(el("span", "ctx-ref", S(o.ref)));
+        node.append(lab, el("p", null, text));
+        els.ctx.append(node);
+        show("s-context");
+        break;
+      }
+      case "fact": {
+        const text = S(o.text), title = S(o.title);
+        if (!text) return;
+        node = el("div", "fact");
+        if (S(o.ref)) node.append(el("span", "tag lut", S(o.ref)));
+        if (S(o.num)) node.append(el("div", "fact-num", S(o.num)));
+        if (title) node.append(el("h4", null, title));
+        node.append(el("p", null, text));
+        els.facts.append(node);
+        show("s-facts");
+        break;
+      }
+      case "term": {
+        const word = S(o.word), text = S(o.text);
+        if (!word || !text) return;
+        node = el("div", "term");
+        const dt = el("dt");
+        dt.append(el("span", "term-word", word));
+        if (S(o.orig)) dt.append(el("span", "term-orig", S(o.orig)));
+        node.append(dt, el("dd", null, text));
+        els.terms.append(node);
+        show("s-terms");
+        break;
+      }
+      case "today": {
+        const then = S(o.then), now = S(o.now);
+        if (!then || !now) return;
+        node = el("div", "today-row");
+        const a = el("div", "then"); a.append(el("span", "tag nisip", "Atunci"), el("p", null, then));
+        const b = el("div", "now"); b.append(el("span", "tag lut", "Azi"), el("p", null, now));
+        node.append(a, b);
+        els.today.append(node);
+        show("s-today");
+        break;
+      }
+      case "watch": {
+        const text = S(o.text);
+        if (!text) return;
+        node = el("li");
+        node.innerHTML = ARROW;
+        node.append(el("p", null, text));
+        els.watch.append(node);
+        show("s-watch");
+        break;
+      }
+      case "question": {
+        const text = S(o.text);
+        if (!text) return;
+        els.question.textContent = text;
+        node = $("#s-q");
+        show("s-q");
+        break;
+      }
+      case "error": {
+        errorShown = true;
+        els.result.hidden = true;
+        showStatus("error", S(o.text) || "N-am recunoscut o referință biblică. Scrie, de exemplu, Ioan 4:1-42.");
+        return;
+      }
+      default:
+        return;
+    }
+    current.lines.push(o);
+    if (node && animate) node.classList.add("in");
+  }
+
+  const dayBadge = (n) => `Ziua ${n} · ${whenLabel(n)}`;
+  function dateBadge(iso) {
+    if (!iso || new Date(iso).toDateString() === new Date().toDateString()) return "Altă citire · azi";
+    try { return "Altă citire · " + new Intl.DateTimeFormat("ro-RO", { day: "numeric", month: "long" }).format(new Date(iso)); } catch (e) { return "Altă citire"; }
+  }
+
+  function showStatus(kind, text) {
+    els.status.dataset.kind = kind;
+    els.statusText.textContent = text;
+    els.stop.hidden = kind !== "loading";
+    els.status.hidden = false;
+  }
+  const hideStatus = () => { els.status.hidden = true; };
+
+  function renderLines(lines, planDay) {
+    reset();
+    animate = false;
+    current.planDay = planDay || null;
+    knownRefs = planDay ? planRefs(planDay) : null;
+    for (const o of lines) add(o);
+    if (!current.refs.length && knownRefs) current.refs = knownRefs;
+    renderLinks();
+    knownRefs = null;
+    els.result.hidden = false;
+  }
+
+  // The notes for a plan day: your own generated version first, else the pre-written one.
+  function contentFor(n) {
+    const h = store.history.find((x) => x.planDay === n);
+    if (h) return h.lines;
+    const p = PREGEN[String(n)];
+    return Array.isArray(p) && p.length ? p : null;
+  }
+
+  function renderPlanButton(hasContent) {
+    els.planBtn.textContent = `Pregătește ziua ${viewDay} cu Claude`;
+    els.planBtn.hidden = hasContent || !canAsk;
+  }
+
+  function showDay(n, scroll) {
+    viewDay = clampDay(n);
+    renderDay();
+    if (busy) return;
+    hideStatus();
+    const lines = contentFor(viewDay);
+    if (lines) {
+      renderLines(lines, viewDay);
+      currentJob = planJob(viewDay);
+      els.again.hidden = !canAsk;
+    } else {
+      reset();
+      current.planDay = viewDay;
+      current.refs = planRefs(viewDay);
+      els.title.textContent = groupLabels(current.refs).join(" · ");
+      els.missingText.textContent = canAsk
+        ? "Notele „Știai că?” pentru ziua asta nu sunt scrise încă. Apasă „Pregătește ziua cu Claude” sau citește direct pasajele de mai jos."
+        : "Notele „Știai că?” pentru ziua asta nu sunt scrise încă. Le poți pregăti din pagina deschisă în Claude. Până atunci, pasajele sunt mai jos.";
+      els.missing.hidden = false;
+      renderLinks();
+      els.result.hidden = false;
+      currentJob = null;
+      els.again.hidden = true;
+    }
+    els.badge.textContent = dayBadge(viewDay);
+    renderPlanButton(!!lines);
+    updateDock();
+    if (scroll) {
+      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      els.result.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }
+  }
+
+  function renderDay() {
+    const td = todayDay();
+    els.dayNum.textContent = "Ziua " + viewDay;
+    els.dayOf.textContent = `din ${TOTAL} · ${whenLabel(viewDay)}`;
+    els.planRefs.textContent = groupLabels(planRefs(viewDay)).join(" · ");
+    els.planNote.hidden = !isReflection(viewDay);
+    els.dayPrev.disabled = viewDay <= 1;
+    els.dayNext.disabled = viewDay >= TOTAL;
+    els.planOff.hidden = viewDay === td;
+    els.backToday.textContent = `Înapoi la ziua ${td}`;
+    els.setDay.textContent = `Azi sunt la ziua ${viewDay}`;
+  }
+
+  function renderRecent() {
+    els.recent.replaceChildren();
+    const items = store.history.filter((h) => !h.planDay).slice(0, 6);
+    if (!items.length) { els.recent.hidden = true; return; }
+    els.recent.append(el("span", "tag lut", "Alte citiri"));
+    for (const h of items) {
+      const b = el("button", "chip", S(h.title) || S(h.input));
+      b.type = "button";
+      b.title = S(h.input);
+      b.addEventListener("click", () => openEntry(h));
+      els.recent.append(b);
+    }
+    els.recent.hidden = false;
+  }
+
+  function openEntry(h) {
+    if (busy) return;
+    hideStatus();
+    renderLines(h.lines, null);
+    els.badge.textContent = dateBadge(h.at);
+    currentJob = { input: S(h.input), planDay: null };
+    els.input.value = currentJob.input;
+    els.again.hidden = !canAsk;
+    updateDock();
+  }
+
+  function saveHistory(job) {
+    const entry = { input: job.input, planDay: job.planDay || null, at: new Date().toISOString(), title: S(els.title.textContent) || job.input, lines: current.lines };
+    const same = (h) => (job.planDay ? h.planDay === job.planDay : !h.planDay && norm(h.input) === norm(job.input));
+    store.history = [entry, ...store.history.filter((h) => !same(h))].slice(0, 30);
+    saveStore();
+    renderRecent();
+  }
+
+  // ---------- day navigation: arrows, dock, swipe, keyboard
+  const step = (delta, scroll) => { if (!busy) showDay(viewDay + delta, scroll); };
+  els.dayPrev.addEventListener("click", () => step(-1));
+  els.dayNext.addEventListener("click", () => step(1));
+  els.dockPrev.addEventListener("click", () => step(-1, true));
+  els.dockNext.addEventListener("click", () => step(1, true));
+  els.backToday.addEventListener("click", () => showDay(todayDay()));
+  els.setDay.addEventListener("click", () => {
+    store.plan = { anchorDay: viewDay, anchorDate: todayKey() };
+    saveStore();
+    showDay(viewDay);
+  });
+  els.planBtn.addEventListener("click", () => generate(planJob(viewDay), false));
+
+  let touch = null;
+  els.result.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) { touch = null; return; }
+    touch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+  els.result.addEventListener("touchend", (e) => {
+    if (!touch || !current.planDay) { touch = null; return; }
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touch.x, dy = t.clientY - touch.y;
+    touch = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > 2 * Math.abs(dy)) step(dx < 0 ? 1 : -1, true);
+  }, { passive: true });
+  document.addEventListener("keydown", (e) => {
+    if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+    if (e.key === "ArrowLeft") step(-1);
+    if (e.key === "ArrowRight") step(1);
+  });
+
+  // ---------- asking Claude
+  function buildPrompt(job) {
+    const many = job.planDay ? planRefs(job.planDay).length > 1 : /[;,]|\bși\b/.test(job.input);
+    const planLines = job.planDay ? [
+      `Citirea e ziua ${job.planDay} din ${TOTAL} a planului „${PLAN.name}” (Life.Church): Noul Testament în ordine cronologică, cu capitole din Vechiul Testament puse alături, ca să arate că Biblia e o singură poveste care duce la Isus.`,
+      isReflection(job.planDay)
+        ? "E o zi de pauză și reflecție, cu un singur verset. Păstrează totul scurt: 2 linii de context, 3 fapte, 2–3 termeni, 2 comparații, 2 lucruri de urmărit."
+        : "",
+      "",
+    ] : [];
+    return [
+      "Ești un ghid biblic pasionat și riguros. Pregătești un cititor pentru citirea biblică de azi, ÎNAINTE să citească, ca să citească mai cu drag și să înțeleagă mai mult. Secțiunea se numește „Știai că?”.",
+      "",
+      "Citirea de azi (scrisă de cititor sau luată din plan; poate avea mai multe pasaje, prescurtări sau greșeli de scriere):",
+      "<<<" + job.input.slice(0, 600) + ">>>",
+      "",
+      ...planLines,
+      "Traducerea pe care o citește: " + version().name + ". Când numești un obiect sau un cuvânt din pasaj, scrie-l cum apare în această traducere.",
+      "",
+      "Stil: limba română corectă, cu diacritice (ș și ț cu virgulă). Cald și concret, ca un prieten care știe multă istorie și arheologie. Propoziții scurte, fără jargon, fără predică. Fiecare \"text\" are 1–3 propoziții (cel mult 45 de cuvinte). Nu povesti tot pasajul: stârnește curiozitatea și lasă-l să descopere singur.",
+      "",
+      "Rigoare: scrie doar lucruri bine stabilite (istorie, geografie, arheologie, limbile originale, obiceiuri). Ce e tradiție sau ipoteză, spune clar („după tradiție”, „probabil”, „unii cercetători cred”). Nu inventa cifre, nume sau citate. Dacă nu ești sigur de un detaliu, lasă-l deoparte.",
+      "Pentru comparații cu banii de azi poți folosi: 1 dinar = plata unei zile de muncă; salariul mediu net în România ≈ 5.700 lei pe lună (INS, august 2026), adică ≈ 260 lei pe zi de muncă. Dă ordine de mărime, nu calcule la leu.",
+      "",
+      "Format: răspunde DOAR cu linii JSON (NDJSON). Fiecare linie e un obiect JSON complet, fără alt text, fără ``` și fără virgule între linii. Exact în această ordine:",
+      "1) O linie: {\"t\":\"passage\",\"title\":\"titlu scurt și viu pentru citire, cel mult 8 cuvinte\",\"refs\":[{\"label\":\"Ioan 4:1-42\",\"book\":\"JHN\",\"ch\":4,\"v\":\"1-42\"}]}",
+      "   - \"book\" = codul USFM al cărții: GEN EXO LEV NUM DEU JOS JDG RUT 1SA 2SA 1KI 2KI 1CH 2CH EZR NEH EST JOB PSA PRO ECC SNG ISA JER LAM EZK DAN HOS JOL AMO OBA JON MIC NAM HAB ZEP HAG ZEC MAL MAT MRK LUK JHN ACT ROM 1CO 2CO GAL EPH PHP COL 1TH 2TH 1TI 2TI TIT PHM HEB JAS 1PE 2PE 1JN 2JN 3JN JUD REV.",
+      "   - câte un obiect pentru fiecare capitol; \"v\" = versetele din acel capitol (\"1-42\", \"5\") sau \"\" pentru tot capitolul; \"label\" cu numele românesc al cărții (ex: „Psalmul 23”, „1 Samuel 17:1-11”).",
+      "   - dacă textul nu e o referință biblică, scrie doar {\"t\":\"error\",\"text\":\"motivul, pe scurt\"} și oprește-te.",
+      many
+        ? "2) O linie {\"t\":\"thread\",\"text\":\"firul care leagă pasajele de azi: de ce sunt puse împreună, concret, în 2–3 propoziții\"}."
+        : "2) (Nimic aici: e un singur pasaj.)",
+      "3) Linii {\"t\":\"context\",\"label\":\"Cine\",\"text\":\"...\"}. Pentru un singur pasaj: patru linii, cu label-urile în ordine \"Cine\", \"Când\", \"Unde\", \"Înainte\" (ce s-a petrecut chiar înainte de pasaj). Pentru mai multe pasaje: grupează capitolele consecutive din aceeași carte (ex: 1 Samuel 4–6) și dă 1–2 linii pentru fiecare grup, cu aceleași label-uri și cu \"ref\" (ex: \"ref\":\"1 Samuel 4–6\"); cel mult 7 linii de context în total.",
+      "4) Între 4 și 7 linii {\"t\":\"fact\",\"ref\":\"Ioan 4:6\",\"num\":\"\",\"title\":\"...\",\"text\":\"...\"}: „Știai că?”, detalii surprinzătoare și concrete din pasaje. \"title\" are 3–7 cuvinte și e captivant. \"num\" = o cifră sau o măsură scurtă și izbitoare din acel fapt (ex: \"≈ 40 m\", \"722 î.Hr.\", \"3 zile\"), doar dacă faptul chiar are una; altfel \"\".",
+      "5) Între 3 și 7 linii {\"t\":\"term\",\"word\":\"cuvântul cum apare în traducere\",\"orig\":\"cuvântul original transliterat, doar dacă ajută, altfel gol\",\"text\":\"ce era, cum arăta, ce însemna atunci\"}: obiecte, unități de măsură, ocupații, obiceiuri, locuri sau cuvinte grele.",
+      "6) Două sau trei linii {\"t\":\"today\",\"then\":\"cum era atunci\",\"now\":\"comparația cu viața de azi\"}.",
+      "7) Două sau trei linii {\"t\":\"watch\",\"text\":\"un lucru concret la care să fie atent când citește, cu versetul dacă ajută\"}.",
+      "8) O linie {\"t\":\"question\",\"text\":\"o întrebare personală și scurtă, de luat cu el în citire\"}.",
+      "Dacă sunt mai multe pasaje, împarte faptele, termenii și comparațiile între ele. În \"ref\" scrie mereu cartea, capitolul și versetul, ca în label.",
+    ].join("\n");
+  }
+
+  function parseLine(line) {
+    let s = S(line);
+    if (!s || s.startsWith("```")) return null;
+    s = s.replace(/,\s*$/, "");
+    if (!s.startsWith("{")) {
+      const i = s.indexOf("{");
+      if (i < 0) return null;
+      s = s.slice(i);
+    }
+    try { return JSON.parse(s); } catch (e) { return null; }
+  }
+
+  function copyFor(code) {
+    switch (code) {
+      case "not_granted": return "Pagina nu are voie să folosească Claude. Poți schimba asta din meniul Permisiuni al paginii.";
+      case "sampling_disabled":
+      case "not_declared":
+      case "capability_disabled":
+      case "capability_removed": return "Generarea nu e disponibilă pentru contul acesta.";
+      case "rate_limited": return "Prea multe cereri într-un timp scurt. Încearcă din nou peste câteva minute.";
+      case "session_expired": return "Trebuie să te conectezi din nou la Claude, apoi încearcă iar.";
+      case "refused": return "Claude n-a putut răspunde la cererea asta. Verifică referința și încearcă din nou.";
+      case "prompt_too_large": return "Textul e prea lung. Scrie doar referința, de exemplu Ioan 4:1-42.";
+      default: return "Ceva n-a mers. Apasă din nou pe Pregătește.";
+    }
+  }
+
+  let busy = false;
+  let ctl = null;
+  function setBusy(b, job) {
+    busy = b;
+    els.goBtn.disabled = b;
+    els.planBtn.disabled = b;
+    els.again.disabled = b;
+    els.goBtn.textContent = b && job && !job.planDay ? "Se pregătește…" : "Pregătește";
+    els.planBtn.textContent = b && job && job.planDay ? "Se pregătește…" : `Pregătește ziua ${viewDay} cu Claude`;
+  }
+
+  function applyNoClaude() {
+    canAsk = false;
+    els.other.hidden = true;
+    els.again.hidden = true;
+    els.planBtn.hidden = true;
+    if (!els.missing.hidden) {
+      els.missingText.textContent = "Notele „Știai că?” pentru ziua asta nu sunt scrise încă. Le poți pregăti din pagina deschisă în Claude. Până atunci, pasajele sunt mai jos.";
+    }
+  }
+
+  async function generate(job, refresh) {
+    if (busy) return;
+    setBusy(true, job);
+    showStatus("loading", "Se pornește…");
+    const s = sample || (await samplePromise);
+    if (!s) {
+      setBusy(false);
+      applyNoClaude();
+      showStatus("error", "Generarea merge doar când pagina e deschisă în Claude, cu contul tău conectat.");
+      return;
+    }
+    ctl = new AbortController();
+    errorShown = false;
+    reset();
+    current.planDay = job.planDay || null;
+    knownRefs = job.planDay ? planRefs(job.planDay) : null;
+    els.result.hidden = true;
+    els.again.hidden = true;
+    els.badge.textContent = job.planDay ? dayBadge(job.planDay) : "Altă citire · azi";
+    animate = true;
+    const what = job.planDay ? `ziua ${job.planDay} (${job.input})` : `„${job.input}”`;
+    showStatus("loading", `Claude pregătește detaliile pentru ${what}. De obicei durează sub un minut.`);
+
+    let pending = "";
+    let got = 0;
+    const handle = (line) => {
+      const o = parseLine(line);
+      if (!o || errorShown) return;
+      if (!got) els.result.hidden = false;
+      got++;
+      add(o);
+    };
+    const feed = (chunk) => {
+      const parts = (pending + chunk).split("\n");
+      pending = parts.pop();
+      for (const p of parts) handle(p);
+    };
+
+    try {
+      const res = await s(buildPrompt(job), {
+        signal: ctl.signal,
+        cache: refresh ? { gcTime: DAY, refresh: true } : { gcTime: DAY },
+        onText: ({ delta }) => feed(delta),
+      });
+      if (pending.trim()) { handle(pending); pending = ""; }
+      if (!got && !errorShown) {
+        const a = res.text.indexOf("["), b = res.text.lastIndexOf("]");
+        if (a >= 0 && b > a) {
+          try {
+            const arr = JSON.parse(res.text.slice(a, b + 1));
+            if (Array.isArray(arr)) { els.result.hidden = false; arr.forEach(add); }
+          } catch (e) {}
+        }
+      }
+      if (errorShown) return;
+      if (!current.lines.length) {
+        els.result.hidden = true;
+        showStatus("error", "Răspunsul n-a venit în forma așteptată. Apasă din nou pe Pregătește.");
+        return;
+      }
+      if (!current.refs.length && knownRefs) { current.refs = knownRefs; renderLinks(); }
+      currentJob = job;
+      saveHistory(job);
+      els.again.hidden = false;
+      if (job.planDay) renderPlanButton(true);
+      if (res.truncated) showStatus("note", "Răspunsul s-a oprit înainte de final. Poți cere o altă variantă.");
+      else hideStatus();
+    } catch (e) {
+      if (pending.trim()) handle(pending);
+      const code = e && e.code;
+      if (code === "refused") { reset(); els.result.hidden = true; }
+      if (code === "cancelled") showStatus("note", current.lines.length ? "Oprit. Mai jos e cât a apucat Claude să scrie." : "Oprit.");
+      else showStatus("error", copyFor(code));
+      if (current.lines.length && code !== "refused") { currentJob = job; els.again.hidden = false; }
+    } finally {
+      ctl = null;
+      animate = false;
+      knownRefs = null;
+      setBusy(false);
+      updateDock();
+    }
+  }
+
+  els.stop.addEventListener("click", () => { if (ctl) ctl.abort(); });
+  els.form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = S(els.input.value);
+    if (!v) {
+      els.input.focus();
+      showStatus("note", "Scrie mai întâi ce vrei să citești, de exemplu Ioan 4:1-42.");
+      return;
+    }
+    els.input.blur();
+    generate({ input: v, planDay: null }, false);
+  });
+  els.again.addEventListener("click", () => { if (currentJob) generate(currentJob, true); });
+
+  // ---------- first view: today's plan day
+  if (!canAsk) applyNoClaude();
+  else samplePromise.then((s) => { if (!s) applyNoClaude(); });
+  renderRecent();
+  showDay(viewDay);
+})();
+</script>
+
+<script>if("serviceWorker" in navigator){addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body>
+</html>
