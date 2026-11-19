@@ -1,5 +1,5 @@
-// Știai că? — works offline after the first visit. Build 45faf88ffb
-const CACHE = "stiai-ca-45faf88ffb";
+// Știai că? — works offline after the first visit. Build 9fa00eace8
+const CACHE = "stiai-ca-9fa00eace8";
 const FONTS = "stiai-ca-fonts";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "ghilimele.svg", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
